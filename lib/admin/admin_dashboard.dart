@@ -55,7 +55,7 @@ class AdminDashboardBody extends StatelessWidget {
             ),
             child: Column(
               children: [
-                SizedBox(height: 20),
+                SizedBox(height: 30),
                 Text(
                   "Welcome Admin",
                   style: TextStyle(

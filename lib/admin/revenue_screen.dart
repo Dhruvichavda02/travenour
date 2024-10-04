@@ -146,7 +146,7 @@ class RevenueScreen extends StatelessWidget {
                                 ],
                                 isCurved: true,
                                 barWidth: 4,
-                                colors: [Colors.blue],
+                                color: Colors.blue, // Use color instead of colors
                                 dotData: FlDotData(show: false),
                               ),
                             ],
