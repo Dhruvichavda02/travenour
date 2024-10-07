@@ -7,14 +7,32 @@ class RevenueScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text("Revenue"),
+        centerTitle: true,
         leading: IconButton(
           icon: Icon(Icons.arrow_back),
           onPressed: () {
-            // Handle back action
+            Navigator.pop(context); // Navigate back to the previous screen
           },
         ),
       ),
       bottomNavigationBar: BottomNavigationBar(
+        currentIndex: 0, // Add an index to manage selected item
+        onTap: (index) {
+          switch (index) {
+            case 0:
+              Navigator.pop(context); // Go back to Home
+              break;
+            case 1:
+              Navigator.pushNamed(context, '/paymentStatus'); // Navigate to Payment Status
+              break;
+            case 2:
+              Navigator.pushNamed(context, '/bookingDetails'); // Navigate to Booking Details
+              break;
+            case 3:
+              Navigator.pushNamed(context, '/packageDetails'); // Navigate to Package Status
+              break;
+          }
+        },
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(
             icon: Icon(Icons.home),
@@ -146,7 +164,7 @@ class RevenueScreen extends StatelessWidget {
                                 ],
                                 isCurved: true,
                                 barWidth: 4,
-                                color: Colors.blue, // Use color instead of colors
+                                color: Colors.blue, // Chart color
                                 dotData: FlDotData(show: false),
                               ),
                             ],
@@ -164,8 +182,3 @@ class RevenueScreen extends StatelessWidget {
     );
   }
 }
-
-void main() => runApp(MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: RevenueScreen(),
-    ));

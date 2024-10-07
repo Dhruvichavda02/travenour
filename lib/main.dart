@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+
+// import 'admin/revenue_screen.dart';
 // import 'package:travenour_app/SplashScreen.dart';
 
 import 'admin/admin_dashboard.dart';
+import 'admin/pg_detail.dart';
 
 
 void main() {

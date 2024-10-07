@@ -66,16 +66,23 @@ class PaymentStatusScreen extends StatelessWidget {
                   ),
 
                   // View All Button
-                  Center(
-                    child: ElevatedButton(
-                      onPressed: () {
-                        // Handle View All Pressed
-                      },
-                      child: Text("View All"),
-                      style: ElevatedButton.styleFrom(
-                        padding:
-                            EdgeInsets.symmetric(horizontal: 40, vertical: 15),
-                        backgroundColor: Colors.blue, // Background color
+                  Padding(
+                    padding: const EdgeInsets.only(top: 20.0, bottom: 20.0), // Move the button upwards
+                    child: Center(
+                      child: ElevatedButton(
+                        onPressed: () {
+                          // Handle View All Pressed
+                        },
+                        child: Text(
+                          "View All",
+                          style: TextStyle(
+                            color: Colors.white, // Set text color to white
+                          ),
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          padding: EdgeInsets.symmetric(horizontal: 40, vertical: 15),
+                          backgroundColor: Colors.blue, // Background color
+                        ),
                       ),
                     ),
                   ),
@@ -92,7 +99,7 @@ class PaymentStatusScreen extends StatelessWidget {
   Widget _buildTransactionRow(
       String name, String amount, String date, String status) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      padding: const EdgeInsets.symmetric(vertical: 9.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -126,7 +133,7 @@ class PaymentStatusScreen extends StatelessWidget {
           Expanded(
             flex: 2,
             child: Container(
-              padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              padding: EdgeInsets.symmetric(horizontal: 8, vertical: 9),
               decoration: BoxDecoration(
                 color: Colors.green[100],
                 borderRadius: BorderRadius.circular(12),

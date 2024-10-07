@@ -15,6 +15,7 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.blue,
       ),
       home: const RefundsPage(),
+      debugShowCheckedModeBanner: false,
     );
   }
 }
@@ -24,14 +25,15 @@ class RefundsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Use MediaQuery to make UI responsive
     final screenWidth = MediaQuery.of(context).size.width;
 
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () {},
+          onPressed: () {
+            Navigator.pop(context);
+          },
         ),
         title: const Text("Cancelled & Refunds Details"),
         actions: [
@@ -65,35 +67,17 @@ class RefundsPage extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 20),
-            buildRefundTable(screenWidth),  // Data Table to show refund details
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: buildRefundTable(screenWidth),
+            ),
           ],
         ),
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        type: BottomNavigationBarType.fixed,
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'Home',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.monetization_on),
-            label: 'Payment Status',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.book),
-            label: 'Booking',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.pending_actions),
-            label: 'Pending Status',
-          ),
-        ],
-      ),
+      bottomNavigationBar: BottomNavBar(),
     );
   }
 
-  // Widget to build refund table
   Widget buildRefundTable(double screenWidth) {
     return DataTable(
       columnSpacing: 12,
@@ -132,7 +116,6 @@ class RefundsPage extends StatelessWidget {
   }
 }
 
-// Custom widget for Refund Status
 class RefundStatus extends StatelessWidget {
   final String status;
   final Color color;
@@ -155,6 +138,40 @@ class RefundStatus extends StatelessWidget {
           fontWeight: FontWeight.bold,
         ),
       ),
+    );
+  }
+}
+
+class BottomNavBar extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return BottomNavigationBar(
+      type: BottomNavigationBarType.fixed,
+      items: const <BottomNavigationBarItem>[
+        BottomNavigationBarItem(icon: Icon(Icons.home_outlined), label: 'Home'),
+        BottomNavigationBarItem(icon: Icon(Icons.payment_outlined), label: 'Payment Status'),
+        BottomNavigationBarItem(icon: Icon(Icons.book_outlined), label: 'Booking'),
+        BottomNavigationBarItem(icon: Icon(Icons.check_circle_outline), label: 'Package Status'),
+      ],
+      selectedItemColor: Colors.grey,
+      unselectedItemColor: Colors.grey,
+      onTap: (int index) {
+        switch (index) {
+          case 0:
+            // Navigate to Home
+            Navigator.pushReplacementNamed(context, '/'); // Change as per your main route
+            break;
+          case 1:
+            Navigator.pushNamed(context, '/paymentStatus');
+            break;
+          case 2:
+            Navigator.pushNamed(context, '/bookingDetails');
+            break;
+          case 3:
+            Navigator.pushNamed(context, '/packageDetails');
+            break;
+        }
+      },
     );
   }
 }
