@@ -1,13 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:travenour_app/SplashScreen.dart'; // Ensure this is your correct import
 
-// import 'admin/revenue_screen.dart';
-// import 'package:travenour_app/SplashScreen.dart';
-
-import 'admin/admin_dashboard.dart';
-import 'admin/pg_detail.dart';
-
-
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized(); // Ensure binding is initialized
+  await Firebase.initializeApp(); // Initialize Firebase
   runApp(const MyApp());
 }
 
@@ -19,9 +16,8 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       theme: ThemeData(
         fontFamily: 'OpenSans',  
-
       ),
-      home: AdminDashboard(),
+      home: SplashScreen(),
       debugShowCheckedModeBanner: false,
     );
   }

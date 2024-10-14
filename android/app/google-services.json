@@ -1,0 +1,49 @@
+{
+  "project_info": {
+    "project_number": "997528313571",
+    "firebase_url": "https://test-app-e4dcf-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "project_id": "test-app-e4dcf",
+    "storage_bucket": "test-app-e4dcf.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:997528313571:android:be8e33febd895abc06afd6",
+        "android_client_info": {
+          "package_name": "com.example"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB6h1FXWkCtkhIs_lr1vCWMhCK4xUuwVqQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:997528313571:android:dd88e9c167a2b97706afd6",
+        "android_client_info": {
+          "package_name": "com.example.travenour_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB6h1FXWkCtkhIs_lr1vCWMhCK4xUuwVqQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

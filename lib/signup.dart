@@ -1,24 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:travenour_app/database_service.dart'; // Import your DatabaseService
 import 'package:travenour_app/signin.dart';
 
-void main() {
-  runApp(MyApp());
-}
-
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Sign Up',
-      home: SignUpScreen(),
-    );
-  }
-}
-
 class SignUpScreen extends StatelessWidget {
-  const SignUpScreen({super.key});
+  SignUpScreen({super.key});
+
+  // Create TextEditingControllers for user input
+  final TextEditingController nameController = TextEditingController();
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
+
+  // Create an instance of DatabaseService
+  final DatabaseService dbService = DatabaseService();
 
   @override
   Widget build(BuildContext context) {
@@ -45,7 +38,7 @@ class SignUpScreen extends StatelessWidget {
               ),
               SizedBox(height: height * 0.01),
               Text(
-                'Please fill the details and create account',
+                'Please fill the details and create an account',
                 style: TextStyle(
                   fontSize: height * 0.02,
                   color: Colors.grey,
@@ -54,6 +47,7 @@ class SignUpScreen extends StatelessWidget {
               ),
               SizedBox(height: height * 0.03),
               TextField(
+                controller: nameController,
                 decoration: InputDecoration(
                   labelText: 'Name',
                   border: OutlineInputBorder(
@@ -63,6 +57,7 @@ class SignUpScreen extends StatelessWidget {
               ),
               SizedBox(height: height * 0.02),
               TextField(
+                controller: emailController,
                 decoration: InputDecoration(
                   labelText: 'Email',
                   border: OutlineInputBorder(
@@ -72,6 +67,7 @@ class SignUpScreen extends StatelessWidget {
               ),
               SizedBox(height: height * 0.02),
               TextField(
+                controller: passwordController,
                 obscureText: true,
                 decoration: InputDecoration(
                   labelText: 'Password',
@@ -92,11 +88,29 @@ class SignUpScreen extends StatelessWidget {
               ),
               SizedBox(height: height * 0.03),
               ElevatedButton(
-                onPressed: () {
-                 Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const SignInScreen() ),
-                 );
+                onPressed: () async {
+                  try {
+                    // Call the addUser method with input values
+                    await dbService.addUser(
+                      nameController.text,  // User ID can be unique based on the name or another identifier
+                      nameController.text,
+                      emailController.text,
+                      passwordController.text,  // In production, hash this password
+                    );
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text("User added successfully!")),
+                    );
+
+                    // Navigate to the Sign In screen after successful registration
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const SignInScreen()),
+                    );
+                  } catch (e) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text("Something went wrong!")),
+                    );
+                  }
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.blue,  // Updated background color
@@ -107,14 +121,17 @@ class SignUpScreen extends StatelessWidget {
                 ),
                 child: Text(
                   'Sign Up',
-                  style: TextStyle(fontSize: height * 0.02,
-                  ),
+                  style: TextStyle(fontSize: height * 0.02),
                 ),
               ),
               SizedBox(height: height * 0.02),
               GestureDetector(
                 onTap: () {
                   // Handle sign in tap
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const SignInScreen()),
+                  );
                 },
                 child: Text(
                   'Already have an account? Sign in',
