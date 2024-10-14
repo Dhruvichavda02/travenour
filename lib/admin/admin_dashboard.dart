@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:travenour_app/admin/add_admin.dart';
 import 'booking_details.dart';
 import 'cancel_refund_screen.dart';
 
@@ -40,7 +41,7 @@ class AdminDashboard extends StatelessWidget {
         '/refunds_cancel': (context) => RefundsPage(), // Ensure RefundsPage is defined
         '/paymentStatus': (context) => PaymentStatusScreen(),
         '/bookingDetails': (context) => BookingDetailsScreen(),
-        '/packageDetails': (context) => PackageDetailsScreen(),
+        '/AddAdmin': (context) => EditProfileScreen(),
       },
     );
   }
@@ -155,7 +156,7 @@ class BottomNavBar extends StatelessWidget {
         BottomNavigationBarItem(icon: Icon(Icons.home_outlined), label: 'Home'),
         BottomNavigationBarItem(icon: Icon(Icons.payment_outlined), label: 'Payment Status'),
         BottomNavigationBarItem(icon: Icon(Icons.book_outlined), label: 'Booking'),
-        BottomNavigationBarItem(icon: Icon(Icons.check_circle_outline), label: 'Package Status'),
+        BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
       ],
       selectedItemColor: Colors.blue,
       unselectedItemColor: Colors.grey,
@@ -171,7 +172,7 @@ class BottomNavBar extends StatelessWidget {
             Navigator.pushNamed(context, '/bookingDetails');
             break;
           case 3:
-            Navigator.pushNamed(context, '/packageDetails');
+            Navigator.pushNamed(context, '/AddAdmin');
             break;
         }
       },
