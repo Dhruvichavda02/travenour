@@ -52,7 +52,7 @@ class UserDetailsScreen extends StatelessWidget {
         leading: IconButton(
           icon: Icon(Icons.arrow_back),
           onPressed: () {
-            // Handle back navigation
+            Navigator.of(context).pop();
           },
         ),
       ),
@@ -118,7 +118,8 @@ class UserDetailsScreen extends StatelessWidget {
                       var user = users[index];
                       return Table(
                         border: TableBorder(
-                          bottom: BorderSide(color: Colors.grey[300]!, width: 0.5),
+                          bottom:
+                              BorderSide(color: Colors.grey[300]!, width: 0.5),
                         ),
                         columnWidths: const <int, TableColumnWidth>{
                           0: IntrinsicColumnWidth(),
