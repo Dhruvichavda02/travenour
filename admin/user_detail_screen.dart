@@ -44,7 +44,7 @@ class UserDetailsScreen extends StatelessWidget {
     },
   ];
 
-  const UserDetailsScreen({super.key});
+  UserDetailsScreen({super.key});
 
   @override
   Widget build(BuildContext context) {

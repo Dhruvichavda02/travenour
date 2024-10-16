@@ -67,6 +67,9 @@ flutter:
     - assets/jaipur.png
     - assets/Ladakh.jpeg
     - assets/Ld.png
+    - assets/alleppey_image.png
+    - assets/coorg.png
+    - assets/ldd.png
 
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in

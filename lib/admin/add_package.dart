@@ -152,11 +152,10 @@ class _AddPackageFormState extends State<AddPackageForm> {
                                 onPressed: () {
                                   Navigator.pop(context); // Close the dialog
                                 },
-                                child: Text("OK",
-                                style: TextStyle(
-                                  color: Colors.white
-                                ),),
-
+                                child: Text(
+                                  "OK",
+                                  style: TextStyle(color: Colors.white),
+                                ),
                               ),
                             ],
                           ),

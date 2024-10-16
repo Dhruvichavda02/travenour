@@ -33,7 +33,7 @@ class PackageDetailsScreen extends StatelessWidget {
     {"pkgNo": 4, "pkgName": "Las Vegas", "amt": "10,000/-", "image": "assets/c1.png"},
   ];
 
-  const PackageDetailsScreen({super.key});
+  PackageDetailsScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
