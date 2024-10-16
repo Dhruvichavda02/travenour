@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:travenour_app/forgetpass_email.dart';
+import 'package:travenour_app/forgetpass_email.dart'; // Ensure this file exists
 import 'package:travenour_app/home.dart';
-
 import 'package:travenour_app/signup.dart';
 
 void main() {
@@ -43,7 +42,7 @@ class SignInScreen extends StatelessWidget {
               Text(
                 "Sign in now",
                 style: TextStyle(
-                  fontSize: screenWidth * 0.08, // Responsive font size
+                  fontSize: screenWidth * 0.08,
                   fontWeight: FontWeight.bold,
                   color: Colors.black,
                 ),
@@ -91,10 +90,10 @@ class SignInScreen extends StatelessWidget {
                 alignment: Alignment.centerRight,
                 child: TextButton(
                   onPressed: () {
-                     Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => ForgotPasswordScreen() ),
-                 );
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => ForgotPasswordScreen()),
+                    );
                   },
                   child: const Text(
                     "Forget Password?",
@@ -113,8 +112,8 @@ class SignInScreen extends StatelessWidget {
                 child: ElevatedButton(
                   onPressed: () {
                     Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => HomeScreen()),
+                      context,
+                      MaterialPageRoute(builder: (context) => HomeScreen()),
                     );
                   },
                   style: ElevatedButton.styleFrom(
@@ -147,9 +146,9 @@ class SignInScreen extends StatelessWidget {
                   TextButton(
                     onPressed: () {
                       Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => SignUpScreen()),
-                  );
+                        context,
+                        MaterialPageRoute(builder: (context) => SignUpScreen()),
+                      );
                     },
                     child: const Text(
                       "Sign up",

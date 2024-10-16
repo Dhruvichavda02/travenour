@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:travenour_app/SplashScreen.dart'; // Ensure this is your correct import
+
+import 'SplashScreen.dart';  // Import Firebase Core package
+
 
 void main() async {
-  WidgetsFlutterBinding.ensureInitialized(); // Ensure binding is initialized
-  await Firebase.initializeApp(); // Initialize Firebase
+  WidgetsFlutterBinding.ensureInitialized();  // Ensure Flutter bindings are initialized
+  await Firebase.initializeApp();  // Initialize Firebase here
   runApp(const MyApp());
 }
 
@@ -15,9 +17,9 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       theme: ThemeData(
-        fontFamily: 'OpenSans',  
+        fontFamily: 'OpenSans',
       ),
-      home: SplashScreen(),
+      home: const SplashScreen(),
       debugShowCheckedModeBanner: false,
     );
   }
