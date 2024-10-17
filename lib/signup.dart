@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_database/firebase_database.dart';
+import 'package:firebase_database/firebase_database.dart'; // For Firebase Realtime Database
 import 'package:travenour_app/signin.dart';
 
 class SignUpScreen extends StatefulWidget {
@@ -12,7 +11,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
   final TextEditingController usernameController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
-  final FirebaseAuth _auth = FirebaseAuth.instance;
   final DatabaseReference _dbRef = FirebaseDatabase.instance.ref(); // Reference to Firebase Realtime Database
 
   bool isLoading = false;
@@ -23,32 +21,23 @@ class _SignUpScreenState extends State<SignUpScreen> {
     });
 
     try {
-      // Create user with Firebase Auth
-      UserCredential user = await _auth.createUserWithEmailAndPassword(
-        email: emailController.text.trim(),
-        password: passwordController.text.trim(),
+      // Create a unique user ID using the push method
+      String userId = _dbRef.child("users").push().key!; // Generate a unique key for the user
+
+      // Store user details in Realtime Database
+      await _dbRef.child("users").child(userId).set({
+        'user_id': userId, // Store user ID
+        'username': usernameController.text.trim(),
+        'email': emailController.text.trim(),
+        'password': passwordController.text.trim(), // Hash the password in production
+        'role': 'user', // Default role is user
+      });
+
+      // Navigate to the Sign-In screen
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => SignInScreen()),
       );
-
-      if (user.user != null) {
-        // Generate a new user ID by counting existing users
-        final userCountSnapshot = await _dbRef.child("users").once();
-        int userId = userCountSnapshot.snapshot.children.length + 1; // Auto-increment
-
-        // Store user details in Realtime Database
-        await _dbRef.child("users").child(userId.toString()).set({
-          'user_id': userId.toString(),
-          'username': usernameController.text.trim(),
-          'email': emailController.text.trim(),
-          'password': passwordController.text.trim(), // Hash the password in production
-          'role': 'user', // Default role is user
-        });
-
-        // Navigate to the Sign-In screen
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => SignInScreen()),
-        );
-      }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("Error: $e")),
@@ -71,7 +60,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
           padding: const EdgeInsets.symmetric(horizontal: 20),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
-            children: [  
+            children: [
               Text(
                 "Sign up now",
                 style: TextStyle(
