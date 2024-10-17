@@ -76,7 +76,7 @@ class OTPVerificationScreen extends StatelessWidget {
                 onPressed: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => const SignInApp() ),
+                    MaterialPageRoute(builder: (context) => const SignInApp()),
                   );
                 },
                 style: ElevatedButton.styleFrom(

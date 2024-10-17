@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:travenour_app/HomeScreenContent.dart';
 import 'package:travenour_app/home.dart';
+import 'package:travenour_app/signin.dart';
 
 // import 'admin/revenue_screen.dart';
 // import 'package:travenour_app/SplashScreen.dart';
@@ -20,7 +22,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         fontFamily: 'OpenSans',
       ),
-      home: AdminDashboard(),
+      home: SignInApp(),
       debugShowCheckedModeBanner: false,
     );
   }
