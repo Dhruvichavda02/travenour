@@ -1,7 +1,14 @@
+import 'dart:math';
 import 'package:flutter/material.dart';
-import 'package:travenour_app/otp.dart';
+import 'package:firebase_database/firebase_database.dart';
+import 'package:mailer/mailer.dart';
+import 'package:mailer/smtp_server.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'otp.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(); // Initialize Firebase
   runApp(MyApp());
 }
 
@@ -16,71 +23,101 @@ class MyApp extends StatelessWidget {
   }
 }
 
-class ForgotPasswordScreen extends StatelessWidget {
+class ForgotPasswordScreen extends StatefulWidget {
   const ForgotPasswordScreen({super.key});
 
-  void _showEmailSentDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          shape: const RoundedRectangleBorder(
-            borderRadius: BorderRadius.all(Radius.circular(20.0)),
+  @override
+  _ForgotPasswordState createState() => _ForgotPasswordState();
+}
+
+class _ForgotPasswordState extends State<ForgotPasswordScreen> {
+  final _emailController = TextEditingController(); // Email controller
+  String? _generatedOTP; // Initialize the OTP as nullable
+  final DatabaseReference dbRef = FirebaseDatabase.instance.ref().child('users'); // Reference to the user table
+
+  // Function to check if the email is registered
+  Future<bool> _isEmailRegistered(String email) async {
+    bool isRegistered = false;
+
+    try {
+      final snapshot = await dbRef.get();
+
+      if (snapshot.exists) {
+        Map<dynamic, dynamic> data = snapshot.value as Map<dynamic, dynamic>;
+        
+        // Check if the email exists in the database
+        for (var entry in data.entries) {
+          if (entry.value['email']?.toLowerCase() == email.toLowerCase()) {
+            isRegistered = true;
+            break;
+          }
+        }
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Error fetching email: $e")),
+      );
+    }
+
+    return isRegistered;
+  }
+
+  Future<void> sendOTPEmail(String email) async {
+    // Ensure _generatedOTP is not null before sending the email
+    if (_generatedOTP == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Error: OTP is not generated.")),
+      );
+      return;
+    }
+
+    final smtpServer = gmail('dchavda788@rku.ac.in', 'ieyq irim foma rimi'); // Use App Password here
+    final message = Message()
+      ..from = Address('dchavda788@rku.ac.in', 'Travenour')
+      ..recipients.add(email)
+      ..subject = 'Your OTP Code'
+      ..text = 'Your OTP for resetting your password is $_generatedOTP.';
+
+    try {
+      await send(message, smtpServer);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("OTP sent to your email!")),
+      );
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => OTPVerificationScreen(
+            email: email,
+            generatedOTP: _generatedOTP!,
           ),
-          contentPadding: const EdgeInsets.all(20),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: <Widget>[
-              const Icon(Icons.email_outlined, size: 60, color: Colors.blue),
-              const SizedBox(height: 20),
-              const Text(
-                'Check your email',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 10),
-              const Text(
-                'We have sent password recovery instruction to your email',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.grey,
-                ),
-              ),
-              const SizedBox(height: 20),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.of(context).pop(); // Close the dialog
-                    Navigator.of(context).push(MaterialPageRoute(
-                      builder: (context) => OTPVerificationScreen(),
-                    )); // Navigate to OTPVerificationScreen
-                  },
-                  style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.all(15),
-                    backgroundColor: Colors.blue,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                  ),
-                  child: const Text(
-                    'Next',
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
+        ),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Error: Could not send OTP.")),
+      );
+    }
+  }
+
+  void resetPassword() async {
+    String email = _emailController.text.trim(); // Get email directly
+
+    if (email.isNotEmpty) {
+      // Check if email is registered in the database
+      bool isRegistered = await _isEmailRegistered(email);
+      if (isRegistered) {
+        _generatedOTP = (Random().nextInt(9000) + 1000).toString(); // Generate OTP
+        await sendOTPEmail(email);
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Email not found.")),
         );
-      },
-    );
+      }
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Please enter a valid email.")),
+      );
+    }
   }
 
   @override
@@ -92,7 +129,7 @@ class ForgotPasswordScreen extends StatelessWidget {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios, color: Colors.black),
           onPressed: () {
-            // Handle back action
+            Navigator.of(context).pop(); // Navigate back
           },
         ),
       ),
@@ -114,6 +151,7 @@ class ForgotPasswordScreen extends StatelessWidget {
               ),
               const SizedBox(height: 30),
               TextField(
+                controller: _emailController, // Use email controller
                 decoration: InputDecoration(
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10),
@@ -126,7 +164,7 @@ class ForgotPasswordScreen extends StatelessWidget {
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: () {
-                    _showEmailSentDialog(context);
+                    resetPassword(); // Calls the resetPassword function
                   },
                   style: ElevatedButton.styleFrom(
                     padding: const EdgeInsets.all(15),

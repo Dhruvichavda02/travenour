@@ -1,7 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:travenour_app/forgetpass_email.dart'; // Ensure this file exists
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_database/firebase_database.dart'; // Or Firestore, depending on what you're using
+ // Ensure this file exists for the admin dashboard
+import 'package:travenour_app/forgetpass_email.dart'; 
 import 'package:travenour_app/home.dart';
 import 'package:travenour_app/signup.dart';
+
+import 'admin/admin_dashboard.dart';
 
 void main() {
   runApp(const SignInApp());
@@ -22,8 +27,65 @@ class SignInApp extends StatelessWidget {
   }
 }
 
-class SignInScreen extends StatelessWidget {
+class SignInScreen extends StatefulWidget {
   const SignInScreen({super.key});
+
+  @override
+  _SignInScreenState createState() => _SignInScreenState();
+}
+
+class _SignInScreenState extends State<SignInScreen> {
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final DatabaseReference _databaseRef = FirebaseDatabase.instance.ref();
+ // Or Firestore instance
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+  
+  bool _isLoading = false;
+  String? _errorMessage;
+
+  Future<void> _signIn() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      // Firebase authentication to sign in the user
+      UserCredential userCredential = await _auth.signInWithEmailAndPassword(
+        email: _emailController.text,
+        password: _passwordController.text,
+      );
+
+      User? user = userCredential.user;
+
+      if (user != null) {
+        // Fetch user role from the database
+        DataSnapshot snapshot = await _databaseRef.child('users/${user.uid}/role').get();
+        String role = snapshot.value as String;
+
+        // Navigate based on the role
+        if (role == 'admin') {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => AdminDashboard()), // Admin Dashboard
+          );
+        } else {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => HomeScreen()), // Normal Home screen
+          );
+        }
+      }
+    } catch (error) {
+      setState(() {
+        _errorMessage = error.toString();
+      });
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -59,6 +121,7 @@ class SignInScreen extends StatelessWidget {
               SizedBox(height: screenHeight * 0.05),
               // Email Input
               TextField(
+                controller: _emailController,
                 decoration: InputDecoration(
                   filled: true,
                   fillColor: const Color(0xFFF7F7F9),
@@ -72,6 +135,7 @@ class SignInScreen extends StatelessWidget {
               SizedBox(height: screenHeight * 0.02),
               // Password Input
               TextField(
+                controller: _passwordController,
                 obscureText: true,
                 decoration: InputDecoration(
                   filled: true,
@@ -106,33 +170,36 @@ class SignInScreen extends StatelessWidget {
               ),
               SizedBox(height: screenHeight * 0.02),
               // Sign In Button
-              SizedBox(
-                width: double.infinity,
-                height: 56,
-                child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => HomeScreen()),
-                    );
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF0D6EFD),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
+              _isLoading
+                  ? CircularProgressIndicator() // Show a loading spinner
+                  : SizedBox(
+                      width: double.infinity,
+                      height: 56,
+                      child: ElevatedButton(
+                        onPressed: _signIn,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF0D6EFD),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                        ),
+                        child: const Text(
+                          'Sign In',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
                     ),
-                  ),
-                  child: const Text(
-                    'Sign In',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
-              ),
               SizedBox(height: screenHeight * 0.05),
+              // Error message
+              if (_errorMessage != null)
+                Text(
+                  _errorMessage!,
+                  style: TextStyle(color: Colors.red),
+                ),
               // Sign Up Text
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
