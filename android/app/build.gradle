@@ -1,7 +1,9 @@
 plugins {
     id 'com.android.application'
-    id 'org.jetbrains.kotlin.android' version '1.9.0'
-    id 'com.google.gms.google-services' version '4.3.15'
+    id 'com.google.gms.google-services' version '4.3.15' // Firebase plugin
+    id "kotlin-android"
+    id "dev.flutter.flutter-gradle-plugin" // Flutter plugin
+    id 'com.google.firebase.crashlytics' // Firebase Crashlytics plugin
 }
 
 android {
@@ -16,9 +18,22 @@ android {
         versionName = "1.0"
     }
 
+    // Set Java and Kotlin versions to 17 for compatibility
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    // Kotlin options
+    kotlinOptions {
+        jvmTarget = "17"
+    }
+
+    // Explicitly set the Java toolchain for Gradle
+    java {
+        toolchain {
+            languageVersion = JavaLanguageVersion.of(17)
+        }
     }
 
     buildTypes {
