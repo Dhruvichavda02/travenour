@@ -11,13 +11,14 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: AdventureTripScreen(),
+      home: AdventureTripScreen(categoryId: '1'), // Pass a sample categoryId
     );
   }
 }
 
 class AdventureTripScreen extends StatefulWidget {
-  const AdventureTripScreen({super.key});
+  final String categoryId; // Add the categoryId field
+  const AdventureTripScreen({super.key, required this.categoryId}); // Mark categoryId as required
 
   @override
   _AdventureTripScreenState createState() => _AdventureTripScreenState();
@@ -45,10 +46,10 @@ class _AdventureTripScreenState extends State<AdventureTripScreen> {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.black),
           onPressed: () {
-             Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => CategoriesScreen()),
-              );
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => CategoriesScreen()),
+            );
           },
         ),
         title: const Text(
@@ -56,14 +57,6 @@ class _AdventureTripScreenState extends State<AdventureTripScreen> {
           style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
-        actions: const [
-          // IconButton(
-          //   icon: Icon(Icons.search, color: Colors.blue),
-          //   onPressed: () {
-          //     // Handle search action
-          //   },
-          // ),
-        ],
       ),
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -82,28 +75,27 @@ class _AdventureTripScreenState extends State<AdventureTripScreen> {
             Expanded(
               child: ListView(
                 children: [
-                   InkWell(
+                  InkWell(
                     onTap: () {
                       Navigator.push(
                         context,
                         MaterialPageRoute(builder: (context) => TrekDetailsScreen()),
                       );
                     },
-                  child:const TripCard(
-                    imageUrl: 'assets/a1.png', // Replace with actual image path
-                    title: 'Srinagar',
-                    dateRange: '20 Sep - 29 Sep',
-                    price: '17k',
-                    details: '1N Srinagar',
+                    child: const TripCard(
+                      imageUrl: 'assets/a1.png', // Replace with actual image path
+                      title: 'Srinagar',
+                      dateRange: '20 Sep - 29 Sep',
+                      price: '17k',
+                      details: '1N Srinagar',
+                    ),
                   ),
-                   ),
                   const TripCard(
                     imageUrl: 'assets/a2.png', // Replace with actual image path
                     title: 'Kashmir',
                     dateRange: '20 Sep - 29 Sep',
                     price: '26k',
-                    details:
-                        '1N Srinagar Houseboat | 1N Gulmarg | 2N Pahalgam | 1N Srinagar',
+                    details: '1N Srinagar Houseboat | 1N Gulmarg | 2N Pahalgam | 1N Srinagar',
                   ),
                   const TripCard(
                     imageUrl: 'assets/a3.png', // Replace with actual image path
@@ -161,7 +153,8 @@ class TripCard extends StatelessWidget {
   final String price;
   final String details;
 
-  const TripCard({super.key, 
+  const TripCard({
+    super.key,
     required this.imageUrl,
     required this.title,
     required this.dateRange,

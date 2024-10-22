@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:travenour_app/adventure.dart'; // Ensure these files exist
-import 'package:travenour_app/gender_trip.dart';
-import 'package:travenour_app/general_trip.dart';
 import 'package:travenour_app/home.dart'; // Ensure this file exists
-import 'package:travenour_app/religious_retreat.dart';
 import 'package:travenour_app/search.dart'; // Ensure this file exists
 
 void main() => runApp(MyApp());
@@ -28,15 +26,60 @@ class CategoriesScreen extends StatefulWidget {
 }
 
 class _CategoriesScreenState extends State<CategoriesScreen> {
-  int _selectedIndex = 0; // To track the current selected index in the BottomNavigationBar
+  int _selectedIndex = 0;
+  final DatabaseReference _packagesDbRef = FirebaseDatabase.instance.ref().child('packages');
+  final DatabaseReference _categoryDbRef = FirebaseDatabase.instance.ref().child('categories');
+  List<Map<String, dynamic>> packages = [];
 
-  // Method to handle navigation when BottomNavigationBar item is clicked
+  @override
+  void initState() {
+    super.initState();
+    _fetchPackages();
+  }
+
+  Future<void> _fetchPackages() async {
+    try {
+      final snapshot = await _packagesDbRef.get();
+      if (snapshot.exists) {
+        List<Map<String, dynamic>> fetchedPackages = [];
+        for (var packageSnapshot in snapshot.children) {
+          final packageData = packageSnapshot.value as Map<dynamic, dynamic>;
+          final categoryId = packageData['category_id'] ?? '';
+
+          String categoryName = '';
+          if (categoryId.isNotEmpty) {
+            final categorySnapshot = await _categoryDbRef.child(categoryId).get();
+            if (categorySnapshot.exists) {
+              final categoryData = categorySnapshot.value as Map<dynamic, dynamic>;
+              categoryName = categoryData['category_name'] ?? 'Unknown';
+            }
+          }
+
+          final package = {
+            'imageUrl': packageData['image_url'] ?? 'assets/default.png',
+            'dateRange': packageData['date_range'] ?? '',
+            'seatLeft': packageData['seat_limit'] ?? 0,
+            'categoryName': categoryName,
+            'categoryId': categoryId, // Add categoryId to the package
+            'title': packageData['title']?.isNotEmpty == true ? packageData['title'] : categoryName,
+          };
+          fetchedPackages.add(package);
+        }
+
+        setState(() {
+          packages = fetchedPackages;
+        });
+      }
+    } catch (e) {
+      print('Error fetching packages: $e');
+    }
+  }
+
   void _onItemTapped(int index) {
     setState(() {
-      _selectedIndex = index; // Update the selected index
+      _selectedIndex = index;
     });
 
-    // Handle navigation based on the selected item
     switch (index) {
       case 0:
         Navigator.pushReplacement(
@@ -50,7 +93,6 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
           MaterialPageRoute(builder: (context) => SearchScreen()),
         );
         break;
-      // Add other cases for Booking and Profile if required
       case 2:
         // Add your Booking screen navigation here
         break;
@@ -104,85 +146,44 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
             Text(
               'All Popular Trip Packages',
               style: TextStyle(
-                fontSize: screenWidth * 0.05, // Responsive font size
+                fontSize: screenWidth * 0.05,
                 fontWeight: FontWeight.bold,
               ),
             ),
             SizedBox(height: screenHeight * 0.02),
             Expanded(
-              child: ListView(
-                children: [
-                  InkWell(
+              child: ListView.builder(
+                itemCount: packages.length,
+                itemBuilder: (context, index) {
+                  final package = packages[index];
+                  return InkWell(
                     onTap: () {
+                      // Pass the categoryId when navigating to the next screen
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                            builder: (context) => AdventureTripScreen()),
+                          builder: (context) => AdventureTripScreen(categoryId: package['categoryId']),
+                        ),
                       );
                     },
-                    child: const TripCard(
-                      imageUrl: 'assets/c2.png', // Replace with actual image path
-                      title: 'Adventure Trip',
-                      dateRange: '20 Sep - 29 Sep',
-                      seatLeft: 15,
-                      ageRange: '19 to 26',
+                    child: TripCard(
+                      imageUrl: package['imageUrl'],
+                      title: package['title'],
+                      dateRange: package['dateRange'],
+                      seatLeft: package['seatLeft'],
+                      categoryName: package['categoryName'],
                     ),
-                  ),
-                  InkWell(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => ReligioustripScreen()),
-                      );
-                    },
-                    child: const TripCard(
-                      imageUrl: 'assets/c1.png', // Replace with actual image path
-                      title: 'Religious Retreat',
-                      dateRange: '16 July - 28 July',
-                      seatLeft: 8,
-                    ),
-                  ),
-                  InkWell(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => GendertripScreen()),
-                      );
-                    },
-                    child: const TripCard(
-                      imageUrl: 'assets/c3.png', // Replace with actual image path
-                      title: 'Girl’s/ Boy’s Trip',
-                      dateRange: '14 Nov - 22 Nov',
-                      seatLeft: 15,
-                    ),
-                  ),
-                  InkWell(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => GeneraltripScreen()),
-                      );
-                    },
-                    child: const TripCard(
-                      imageUrl: 'assets/c4.png', // Replace with actual image path
-                      title: 'General',
-                      dateRange: '12 Dec - 18 Dec',
-                      seatLeft: 25,
-                    ),
-                  ),
-                ],
+                  );
+                },
               ),
             ),
           ],
         ),
       ),
       bottomNavigationBar: BottomNavigationBar(
-        type: BottomNavigationBarType.fixed, // Ensures equal spacing between icons
-        currentIndex: _selectedIndex, // Set the current selected index
-        onTap: _onItemTapped, // Handle tap events
+        type: BottomNavigationBarType.fixed,
+        currentIndex: _selectedIndex,
+        onTap: _onItemTapped,
         items: const [
           BottomNavigationBarItem(
             icon: Icon(Icons.home),
@@ -215,14 +216,15 @@ class TripCard extends StatelessWidget {
   final String title;
   final String dateRange;
   final int seatLeft;
-  final String? ageRange; // Optional parameter for age range
+  final String categoryName;
 
-  const TripCard({super.key, 
+  const TripCard({
+    super.key,
     required this.imageUrl,
     required this.title,
     required this.dateRange,
     required this.seatLeft,
-    this.ageRange,
+    required this.categoryName,
   });
 
   @override
@@ -263,7 +265,7 @@ class TripCard extends StatelessWidget {
                     Text(
                       title,
                       style: TextStyle(
-                        fontSize: screenWidth * 0.045, // Responsive font size
+                        fontSize: screenWidth * 0.045,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -275,14 +277,6 @@ class TripCard extends StatelessWidget {
                         color: Colors.grey,
                       ),
                     ),
-                    if (ageRange != null)
-                      Text(
-                        'Age: $ageRange',
-                        style: TextStyle(
-                          fontSize: screenWidth * 0.035,
-                          color: Colors.grey,
-                        ),
-                      ),
                     SizedBox(height: screenHeight * 0.01),
                     Container(
                       padding: const EdgeInsets.symmetric(
