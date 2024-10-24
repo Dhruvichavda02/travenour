@@ -25,11 +25,10 @@ class _CreatePasswordScreenState extends State<CreatePasswordScreen> {
   }
 
   void _fetchUserId() {
-    // Here, you can set _userId based on how you're managing user IDs
-    // If you already have the user ID passed to this screen, use that instead.
-    // For example, you can pass it as a parameter from the previous screen.
+    // Here, implement the actual logic to fetch the user ID
+    // Replace this with actual logic to get the user ID, e.g., from the previous screen or session.
     setState(() {
-      _userId = 'YOUR_USER_ID_HERE'; // Replace with actual logic to get user ID
+      _userId = 'actual_user_id'; // Replace with actual logic
     });
   }
 
@@ -59,11 +58,10 @@ class _CreatePasswordScreenState extends State<CreatePasswordScreen> {
                     ),
                   ),
                   SizedBox(height: screenHeight * 0.06),
-                  // Display the user ID in large size and white color
                   Text(
                     'User ID: $_userId',
                     style: TextStyle(
-                      fontSize: screenWidth * 0.05, // Adjust size as needed
+                      fontSize: screenWidth * 0.05,
                       color: Colors.white,
                       fontWeight: FontWeight.bold,
                     ),
@@ -118,7 +116,7 @@ class _CreatePasswordScreenState extends State<CreatePasswordScreen> {
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
-                      onPressed: _set,
+                      onPressed: _setPassword,
                       style: ElevatedButton.styleFrom(
                         padding: EdgeInsets.symmetric(vertical: screenHeight * 0.010),
                         backgroundColor: const Color(0xFF31B3CD),
@@ -146,7 +144,7 @@ class _CreatePasswordScreenState extends State<CreatePasswordScreen> {
     );
   }
 
-  void _set() async {
+  void _setPassword() async {
     String newPassword = _newPasswordController.text;
     String confirmPassword = _confirmPasswordController.text;
 
@@ -184,14 +182,14 @@ class _CreatePasswordScreenState extends State<CreatePasswordScreen> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Text('Error'),
+          title: const Text('Error'),
           content: Text(message),
           actions: [
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop();
               },
-              child: Text('OK'),
+              child: const Text('OK'),
             ),
           ],
         );

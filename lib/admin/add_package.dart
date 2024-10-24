@@ -13,7 +13,7 @@ class _AddPackageFormState extends State<AddPackageForm> {
   File? selectedImage;
 
   final List<String> categories = [
-    'Religious Retreat', // Replace with actual category names
+    'Religious Retreat',
     'Adventures Activity',
     'Gender/Specific Trip',
     'Category-4',
@@ -187,7 +187,7 @@ class _AddPackageFormState extends State<AddPackageForm> {
                       borderRadius: BorderRadius.circular(10),
                     ),
                   ),
-                  onPressed: () async {
+                                   onPressed: () async {
                     if (selectedCategory != null) {
                       String packageName = _packageNameController.text;
                       String description = _descriptionController.text;
@@ -198,39 +198,55 @@ class _AddPackageFormState extends State<AddPackageForm> {
                       int totalDays = int.parse(_totalDaysController.text);
                       int seatLimit = int.parse(_seatLimitController.text);
 
-                      // Get the category ID using the selected category name
+                      // Get the category ID or create a new one if it doesn't exist
                       String? categoryId = await DatabaseService().getCategoryId(selectedCategory!);
-
-                      if (categoryId != null) {
-                        // Call the addPackage function
-                        await DatabaseService().addPackage(
-                          packageName: packageName,
-                          description: description,
-                          categoryId: categoryId, // Pass the category ID
-                          price: price,
-                          facilities: facilities,
-                          startDate: startDate,
-                          endDate: endDate,
-                          totalDays: totalDays,
-                          seatLimit: seatLimit,
-                          imageFile: selectedImage, // Pass the selected image file
-                        );
-
-                        // Optionally show a success message or navigate away
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('Package added successfully!')),
-                        );
-                      } else {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('Selected category not found.')),
-                        );
+                      if (categoryId == null) {
+                        // Add the new category using DatabaseService
+                        String newCategoryId = DatabaseService().dbRef.child('categories').push().key!;
+                       
+                        await DatabaseService().addCategory(categoryId: newCategoryId, categoryName: selectedCategory!);
+                        categoryId = newCategoryId;
                       }
+
+                      // Add the package with the obtained categoryId
+                      await DatabaseService().addPackage(
+                        packageName: packageName,
+                        description: description,
+                        categoryId: categoryId, // Pass the category ID
+                        price: price,
+                        facilities: facilities,
+                        startDate: startDate,
+                        endDate: endDate,
+                        totalDays: totalDays,
+                        seatLimit: seatLimit,
+                        imageFile: selectedImage, // Pass the selected image file
+                      );
+
+                      // Show a success message
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Package added successfully!')),
+                      );
+
+                      // Clear the form fields
+                      setState(() {
+                        _packageNameController.clear();
+                        _descriptionController.clear();
+                        _priceController.clear();
+                        _facilitiesController.clear();
+                        _startDateController.clear();
+                        _endDateController.clear();
+                        _totalDaysController.clear();
+                        _seatLimitController.clear();
+                        selectedCategory = null;
+                        selectedImage = null;
+                      });
                     } else {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(content: Text('Please select a category.')),
                       );
                     }
                   },
+
                   child: Text(
                     'Add Package',
                     style: TextStyle(

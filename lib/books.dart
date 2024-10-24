@@ -47,11 +47,8 @@ class _BookingFormState extends State<BookingForm> {
          centerTitle: true,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () {
-             Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => TrekDetailsScreen()),
-            );
+           onPressed: () {
+            Navigator.pop(context); // Navigate back to previous screen
           },
         ),
       ),

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:travenour_app/adventure_pk1.dart';
-import 'package:travenour_app/categories.dart';
+import 'package:firebase_database/firebase_database.dart';
+
+import 'adventure_pk1.dart';
+ // Import the TrekDetailsScreen
 
 void main() => runApp(MyApp());
 
@@ -11,14 +13,15 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: AdventureTripScreen(categoryId: '1'), // Pass a sample categoryId
+      home: AdventureTripScreen(categoryId: 'some_category_id'), // Pass the category ID
     );
   }
 }
 
 class AdventureTripScreen extends StatefulWidget {
-  final String categoryId; // Add the categoryId field
-  const AdventureTripScreen({super.key, required this.categoryId}); // Mark categoryId as required
+  final String categoryId; // Accept categoryId as a parameter
+
+  const AdventureTripScreen({super.key, required this.categoryId});
 
   @override
   _AdventureTripScreenState createState() => _AdventureTripScreenState();
@@ -26,12 +29,64 @@ class AdventureTripScreen extends StatefulWidget {
 
 class _AdventureTripScreenState extends State<AdventureTripScreen> {
   int _selectedIndex = 0;
+  final DatabaseReference _packagesRef = FirebaseDatabase.instance.ref('packages'); // Firebase reference for packages
+  List<Map<String, dynamic>> _packages = []; // List to store packages fetched from Firebase
+  bool _isLoading = true; // To handle loading state
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchPackages(); // Fetch packages when the screen loads
+  }
+
+  // Fetch packages based on the category_id passed to the screen
+  void _fetchPackages() async {
+    try {
+      final DataSnapshot snapshot = await _packagesRef.orderByChild('category_id').equalTo(widget.categoryId).get();
+
+      if (snapshot.exists) {
+        final List<Map<String, dynamic>> loadedPackages = [];
+        final packagesMap = snapshot.value as Map<dynamic, dynamic>;
+
+        packagesMap.forEach((key, value) {
+          loadedPackages.add({
+            'id': key,
+            'title': value['package_name'],
+            'startDate': value['start_date'],   // Fetch start_date
+            'endDate': value['end_date'],       // Fetch end_date
+            'price': value['price'].toString(), // Convert price to string
+            'details': value['description'],
+            'imageUrl': value['image_url'],     // Assuming imageUrl exists in Firebase
+          });
+        });
+
+        setState(() {
+          _packages = loadedPackages;
+          _isLoading = false; // Stop showing the loading spinner
+        });
+      }
+    } catch (e) {
+      print('Error fetching packages: $e');
+      setState(() {
+        _isLoading = false; // Stop showing the loading spinner even if an error occurs
+      });
+    }
+  }
 
   // Handle navigation when BottomNavigationBar item is clicked
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
     });
+  }
+
+  // Navigate to TrekDetailsScreen with package_id
+  void _navigateToDetailsScreen(String packageId) {
+   Navigator.push(
+  context,
+  MaterialPageRoute(builder: (context) => TrekDetailsScreen(packageId: packageId)), // Use widget.categoryId
+);
+
   }
 
   @override
@@ -46,10 +101,7 @@ class _AdventureTripScreenState extends State<AdventureTripScreen> {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.black),
           onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => CategoriesScreen()),
-            );
+            Navigator.pop(context); // Navigate back to previous screen
           },
         ),
         title: const Text(
@@ -73,46 +125,27 @@ class _AdventureTripScreenState extends State<AdventureTripScreen> {
             ),
             SizedBox(height: screenHeight * 0.02),
             Expanded(
-              child: ListView(
-                children: [
-                  InkWell(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => TrekDetailsScreen()),
-                      );
-                    },
-                    child: const TripCard(
-                      imageUrl: 'assets/a1.png', // Replace with actual image path
-                      title: 'Srinagar',
-                      dateRange: '20 Sep - 29 Sep',
-                      price: '17k',
-                      details: '1N Srinagar',
+              child: _isLoading
+                  ? const Center(child: CircularProgressIndicator()) // Show loading spinner while fetching data
+                  : ListView.builder(
+                      itemCount: _packages.length,
+                      itemBuilder: (context, index) {
+                        final package = _packages[index];
+                        return InkWell(
+                          onTap: () {
+                            // Pass package_id to TrekDetailsScreen
+                            _navigateToDetailsScreen(package['id']);
+                          },
+                          child: TripCard(
+                            title: package['title'],
+                            startDate: package['startDate'],  // Pass startDate
+                            endDate: package['endDate'],      // Pass endDate
+                            price: package['price'],           // Pass price
+                            details: package['details'],
+                          ),
+                        );
+                      },
                     ),
-                  ),
-                  const TripCard(
-                    imageUrl: 'assets/a2.png', // Replace with actual image path
-                    title: 'Kashmir',
-                    dateRange: '20 Sep - 29 Sep',
-                    price: '26k',
-                    details: '1N Srinagar Houseboat | 1N Gulmarg | 2N Pahalgam | 1N Srinagar',
-                  ),
-                  const TripCard(
-                    imageUrl: 'assets/a3.png', // Replace with actual image path
-                    title: 'Mussoorie',
-                    dateRange: '14 Nov - 22 Nov',
-                    price: '14k',
-                    details: '3N in Mussoorie',
-                  ),
-                  const TripCard(
-                    imageUrl: 'assets/a4.png', // Replace with actual image path
-                    title: 'Ladakh',
-                    dateRange: '12 Dec - 18 Dec',
-                    price: '18k',
-                    details: '3N in Ladakh',
-                  ),
-                ],
-              ),
             ),
           ],
         ),
@@ -147,17 +180,17 @@ class _AdventureTripScreenState extends State<AdventureTripScreen> {
 }
 
 class TripCard extends StatelessWidget {
-  final String imageUrl;
   final String title;
-  final String dateRange;
+  final String startDate;  // Add startDate
+  final String endDate;    // Add endDate
   final String price;
   final String details;
 
   const TripCard({
     super.key,
-    required this.imageUrl,
     required this.title,
-    required this.dateRange,
+    required this.startDate,
+    required this.endDate,
     required this.price,
     required this.details,
   });
@@ -176,6 +209,7 @@ class TripCard extends StatelessWidget {
         ),
         child: Row(
           children: [
+            // Image container, if required
             Container(
               width: screenWidth * 0.25,
               height: screenHeight * 0.15,
@@ -183,10 +217,6 @@ class TripCard extends StatelessWidget {
                 borderRadius: const BorderRadius.only(
                   topLeft: Radius.circular(15),
                   bottomLeft: Radius.circular(15),
-                ),
-                image: DecorationImage(
-                  image: AssetImage(imageUrl),
-                  fit: BoxFit.cover,
                 ),
               ),
             ),
@@ -206,7 +236,14 @@ class TripCard extends StatelessWidget {
                     ),
                     SizedBox(height: screenHeight * 0.005),
                     Text(
-                      dateRange,
+                      'Start: $startDate',  // Display start date
+                      style: TextStyle(
+                        fontSize: screenWidth * 0.035,
+                        color: Colors.grey,
+                      ),
+                    ),
+                    Text(
+                      'End: $endDate',      // Display end date
                       style: TextStyle(
                         fontSize: screenWidth * 0.035,
                         color: Colors.grey,
@@ -233,7 +270,7 @@ class TripCard extends StatelessWidget {
                             borderRadius: BorderRadius.circular(20),
                           ),
                           child: Text(
-                            price,
+                            '$price INR',  // Display price
                             style: TextStyle(
                               fontSize: screenWidth * 0.035,
                               color: Colors.white,

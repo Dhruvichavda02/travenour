@@ -4,9 +4,11 @@ import 'package:firebase_storage/firebase_storage.dart';
 
 class DatabaseService {
   final DatabaseReference _dbRef = FirebaseDatabase.instance.ref();
-  final FirebaseStorage _storage = FirebaseStorage.instance; // Initialize Firebase Storage
+  final FirebaseStorage _storage = FirebaseStorage.instance;
 
-  
+  // Expose _dbRef as a getter to be used externally if needed
+  DatabaseReference get dbRef => _dbRef;
+
   // Function to add a new user
   Future<void> addUser({
     required String userId,
@@ -47,7 +49,7 @@ class DatabaseService {
     }
   }
 
- Future<void> addCategory({
+  Future<void> addCategory({
     required String categoryId,
     required String categoryName,
   }) async {
@@ -63,15 +65,14 @@ class DatabaseService {
   }
 
   // Function to get category ID by name
- Future<String?> getCategoryId(String categoryName) async {
-  final snapshot = await _dbRef.child('categories').orderByChild('category_name').equalTo(categoryName).once();
-  if (snapshot.snapshot.exists) {
-    // Safely check if the snapshot exists and cast to Map if it does
-    final categories = snapshot.snapshot.value as Map<dynamic, dynamic>;
-    return categories.keys.first.toString(); // Return the first matching category ID
+  Future<String?> getCategoryId(String categoryName) async {
+    final snapshot = await _dbRef.child('categories').orderByChild('category_name').equalTo(categoryName).once();
+    if (snapshot.snapshot.exists) {
+      final categories = snapshot.snapshot.value as Map<dynamic, dynamic>;
+      return categories.keys.first.toString(); // Return the first matching category ID
+    }
+    return null;
   }
-  return null; // Return null if category doesn't exist
-}
 
   // Function to add a new package
   Future<void> addPackage({
@@ -87,15 +88,13 @@ class DatabaseService {
     File? imageFile,
   }) async {
     try {
-      // Generate a unique ID for the package
       String packageId = _dbRef.child('packages').push().key!;
 
-      // Create a package object
       final packageData = {
         'package_id': packageId,
         'package_name': packageName,
         'description': description,
-        'category_id': categoryId, // Reference to the category table
+        'category_id': categoryId,
         'price': price,
         'facilities': facilities,
         'start_date': startDate,
@@ -104,11 +103,53 @@ class DatabaseService {
         'seat_limit': seatLimit,
       };
 
-      // Save the package data to the database
       await _dbRef.child('packages').child(packageId).set(packageData);
     } catch (e) {
       print('Error adding package: $e');
-      throw e; // Rethrow the error after logging
+      throw e;
+    }
+  }
+
+   Future<List<Map<String, dynamic>>> getPackagesByCategory(String categoryId) async {
+    List<Map<String, dynamic>> packages = [];
+    DataSnapshot snapshot = await dbRef.child('packages').orderByChild('categoryId').equalTo(categoryId).get();
+    if (snapshot.value != null) {
+      Map<dynamic, dynamic> packageMap = snapshot.value as Map<dynamic, dynamic>;
+      packageMap.forEach((key, value) {
+        packages.add(Map<String, dynamic>.from(value));
+      });
+    }
+    return packages;
+
+  }
+
+   // Function to add a booking
+  Future<void> addBooking({
+    required String bookingId,
+    required String userId,  // Foreign key from user table
+    required String packageId, // Foreign key from package table
+    required int numberOfPeople,
+    required String bookingDate,
+    String amount = 'Paid',  // Default amount set to 'Paid'
+    required String paymentDate,
+    required String paymentType,
+    required String paymentStatus,
+  }) async {
+    try {
+      await _dbRef.child('bookings').child(bookingId).set({
+        'booking_id': bookingId,
+        'user_id': userId,
+        'package_id': packageId,
+        'no_of_people': numberOfPeople,
+        'booking_date': bookingDate,
+        'amount': amount,
+        'payment_date': paymentDate,
+        'payment_type': paymentType,
+        'payment_status': paymentStatus,
+      });
+    } catch (e) {
+      print('Error adding booking: $e');
+      throw e;
     }
   }
 }

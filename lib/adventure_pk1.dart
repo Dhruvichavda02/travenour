@@ -1,46 +1,73 @@
 import 'package:flutter/material.dart';
-import 'package:travenour_app/Profile.dart';
-import 'package:travenour_app/books.dart';
-import 'package:travenour_app/home.dart';
-import 'package:travenour_app/search.dart';
+import 'package:firebase_database/firebase_database.dart';
 
-void main() {
-  runApp(TrekApp());
-}
-
-class TrekApp extends StatelessWidget {
-  const TrekApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: TrekDetailsScreen(),
-    );
-  }
-}
+import 'books.dart';
+import 'categories.dart'; // Import for Firebase
 
 class TrekDetailsScreen extends StatefulWidget {
-  const TrekDetailsScreen({super.key});
+  final String packageId;
+
+  const TrekDetailsScreen({super.key, required this.packageId});
 
   @override
   _TrekDetailsScreenState createState() => _TrekDetailsScreenState();
 }
 
 class _TrekDetailsScreenState extends State<TrekDetailsScreen> {
-  int _currentIndex = 2; // Default to Booking screen
+  int _currentIndex = 2;
+  Map<String, dynamic>? packageDetails;
+  bool isLoading = true; // Loading state
 
-  final List<Widget> _screens = [
-    HomeScreen(),
-    SearchScreen(),
-    BookingForm(),
-    ProfileEditApp(),
-  ];
+  @override
+  void initState() {
+    super.initState();
+    _fetchPackageDetails(widget.packageId); // Fetch package details on init
+  }
+
+  // Fetch package details from Firebase based on packageId
+  Future<void> _fetchPackageDetails(String packageId) async {
+    DatabaseReference packageRef = FirebaseDatabase.instance
+        .ref()
+        .child('packages')
+        .child(packageId);
+
+    final snapshot = await packageRef.get();
+
+    if (snapshot.exists) {
+      setState(() {
+        packageDetails = Map<String, dynamic>.from(snapshot.value as Map);
+        isLoading = false; // Data is loaded
+      });
+    } else {
+      print('Package not found!');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     var screenWidth = MediaQuery.of(context).size.width;
     var screenHeight = MediaQuery.of(context).size.height;
+
+    if (isLoading) {
+      // Show a loading spinner while data is loading
+      return Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    if (packageDetails == null) {
+      // Show an error message if the package details are null
+      return Scaffold(
+        body: Center(child: Text("No package details found.")),
+      );
+    }
+
+    // Extracting the fetched details
+    String startDate = packageDetails!['start_date'] ?? 'N/A';
+    String endDate = packageDetails!['end_date'] ?? 'N/A';
+    List facilities = packageDetails!['facilities'] ?? [];
+    int totalDays = packageDetails!['total_days'] ?? 0;
+    String description = packageDetails!['description'] ?? 'No description available';
 
     return Scaffold(
       body: SingleChildScrollView(
@@ -86,15 +113,7 @@ class _TrekDetailsScreenState extends State<TrekDetailsScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Goechala Trek, Sikkim',
-                    style: TextStyle(
-                      fontSize: screenWidth * 0.06,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'About Destination',
+                    'Start Date: $startDate',
                     style: TextStyle(
                       fontSize: screenWidth * 0.045,
                       fontWeight: FontWeight.bold,
@@ -102,72 +121,47 @@ class _TrekDetailsScreenState extends State<TrekDetailsScreen> {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'Experience the Goechala trek for breathtaking views of Mt. Kanchenjunga, pristine landscapes, rhododendron forests, alpine meadows, and diverse wildlife.',
+                    'End Date: $endDate',
                     style: TextStyle(
-                      fontSize: screenWidth * 0.04,
-                      color: Colors.grey[600],
+                      fontSize: screenWidth * 0.045,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
                   const SizedBox(height: 16),
-
-                  // Days and Price Section
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Days',
-                            style: TextStyle(
-                              fontSize: screenWidth * 0.045,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                            decoration: BoxDecoration(
-                              color: Colors.purple.shade100,
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            child: Text(
-                              '9N/10D',
-                              style: TextStyle(
-                                fontSize: screenWidth * 0.04,
-                                color: Colors.purple,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Price',
-                            style: TextStyle(
-                              fontSize: screenWidth * 0.045,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            '18K per person',
-                            style: TextStyle(
-                              fontSize: screenWidth * 0.045,
-                              color: Colors.black,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
+                  Text(
+                    'Facilities',
+                    style: TextStyle(
+                      fontSize: screenWidth * 0.045,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  // Displaying facilities
+                  Wrap(
+                    spacing: 8.0,
+                    children: facilities
+                        .map((facility) => Chip(label: Text(facility.toString())))
+                        .toList(),
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    'Trek to Sachen, Tsokha, Dzongri, Downhill to Thansing, Kokchurang',
+                    'Total Days: $totalDays',
+                    style: TextStyle(
+                      fontSize: screenWidth * 0.045,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Description',
+                    style: TextStyle(
+                      fontSize: screenWidth * 0.045,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    description,
                     style: TextStyle(
                       fontSize: screenWidth * 0.04,
                       color: Colors.grey[600],
@@ -216,7 +210,7 @@ class _TrekDetailsScreenState extends State<TrekDetailsScreen> {
         selectedItemColor: Colors.grey,
         unselectedItemColor: Colors.grey,
         showUnselectedLabels: true,
-        type: BottomNavigationBarType.fixed, // Ensure fixed type for equal spacing
+        type: BottomNavigationBarType.fixed,
         items: [
           const BottomNavigationBarItem(
             icon: Icon(Icons.home),
@@ -229,7 +223,7 @@ class _TrekDetailsScreenState extends State<TrekDetailsScreen> {
           BottomNavigationBarItem(
             icon: Icon(
               Icons.airplane_ticket,
-              color: _currentIndex == 2 ? Colors.grey : Colors.grey, // Change color based on selection
+              color: _currentIndex == 2 ? Colors.grey : Colors.grey,
             ),
             label: 'Booking',
           ),
@@ -240,18 +234,12 @@ class _TrekDetailsScreenState extends State<TrekDetailsScreen> {
         ],
         onTap: (index) {
           setState(() {
-            _currentIndex = index; // Update the current index
+            _currentIndex = index;
           });
 
-          // Navigate to the selected screen
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => _screens[index]),
-          );
+        
         },
       ),
     );
   }
 }
-
-

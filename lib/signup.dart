@@ -1,113 +1,129 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_database/firebase_database.dart'; // For Firebase Realtime Database
 import 'package:travenour_app/signin.dart';
 
-class SignUpScreen extends StatefulWidget {
-  @override
-  _SignUpScreenState createState() => _SignUpScreenState();
+void main() {
+  runApp(MyApp());
 }
 
-class _SignUpScreenState extends State<SignUpScreen> {
-  final TextEditingController usernameController = TextEditingController();
-  final TextEditingController emailController = TextEditingController();
-  final TextEditingController passwordController = TextEditingController();
-  final DatabaseReference _dbRef = FirebaseDatabase.instance.ref(); // Reference to Firebase Realtime Database
-
-  bool isLoading = false;
-
-  Future<void> _signUp() async {
-    setState(() {
-      isLoading = true;
-    });
-
-    try {
-      // Create a unique user ID using the push method
-      String userId = _dbRef.child("users").push().key!; // Generate a unique key for the user
-
-      // Store user details in Realtime Database
-      await _dbRef.child("users").child(userId).set({
-        'user_id': userId, // Store user ID
-        'username': usernameController.text.trim(),
-        'email': emailController.text.trim(),
-        'password': passwordController.text.trim(), // Hash the password in production
-        'role': 'user', // Default role is user
-      });
-
-      // Navigate to the Sign-In screen
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => SignInScreen()),
-      );
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Error: $e")),
-      );
-    } finally {
-      setState(() {
-        isLoading = false;
-      });
-    }
-  }
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final double screenHeight = MediaQuery.of(context).size.height;
+    return MaterialApp(
+      title: 'Sign Up',
+      home: SignUpScreen(),
+    );
+  }
+}
+
+class SignUpScreen extends StatelessWidget {
+  const SignUpScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    // Using MediaQuery for responsive layout
+    double height = MediaQuery.of(context).size.height;
+    double width = MediaQuery.of(context).size.width;
 
     return Scaffold(
       backgroundColor: Colors.white,
-      body: SafeArea(
+      body: Center(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20),
+          padding: EdgeInsets.symmetric(horizontal: width * 0.08),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Text(
-                "Sign up now",
+                'Sign up now',
                 style: TextStyle(
-                  fontSize: screenHeight * 0.04,
+                  fontSize: height * 0.03,
                   fontWeight: FontWeight.bold,
                 ),
+                textAlign: TextAlign.center,
               ),
-              SizedBox(height: screenHeight * 0.02),
+              SizedBox(height: height * 0.01),
+              Text(
+                'Please fill the details and create account',
+                style: TextStyle(
+                  fontSize: height * 0.02,
+                  color: Colors.grey,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              SizedBox(height: height * 0.03),
               TextField(
-                controller: usernameController,
                 decoration: InputDecoration(
-                  labelText: 'Username',
-                  border: OutlineInputBorder(),
+                  labelText: 'Name',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
                 ),
               ),
-              SizedBox(height: screenHeight * 0.02),
+              SizedBox(height: height * 0.02),
               TextField(
-                controller: emailController,
                 decoration: InputDecoration(
                   labelText: 'Email',
-                  border: OutlineInputBorder(),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
                 ),
               ),
-              SizedBox(height: screenHeight * 0.02),
+              SizedBox(height: height * 0.02),
               TextField(
-                controller: passwordController,
                 obscureText: true,
                 decoration: InputDecoration(
                   labelText: 'Password',
-                  border: OutlineInputBorder(),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  suffixIcon: const Icon(Icons.visibility_off),
                 ),
               ),
-              SizedBox(height: screenHeight * 0.02),
-              ElevatedButton(
-                onPressed: isLoading ? null : _signUp,
-                child: isLoading
-                    ? CircularProgressIndicator()
-                    : Text('Sign Up'),
+              SizedBox(height: height * 0.01),
+              Text(
+                'Password must be 8 characters',
+                style: TextStyle(
+                  fontSize: height * 0.018,
+                  color: Colors.grey,
+                ),
+                textAlign: TextAlign.left,
               ),
-              TextButton(
+              SizedBox(height: height * 0.03),
+              ElevatedButton(
                 onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => SignInScreen()),
-                  );
+                 Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const SignInScreen() ),
+                 );
                 },
-                child: Text("Already have an account? Sign In"),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.blue,  // Updated background color
+                  padding: EdgeInsets.symmetric(vertical: height * 0.02),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+                child: Text(
+                  'Sign Up',
+                  style: TextStyle(fontSize: height * 0.02,
+                  ),
+                ),
+              ),
+              SizedBox(height: height * 0.02),
+              GestureDetector(
+                onTap: () {
+                  // Handle sign in tap
+                },
+                child: Text(
+                  'Already have an account? Sign in',
+                  style: TextStyle(
+                    fontSize: height * 0.02,
+                    color: Colors.blue,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
               ),
             ],
           ),
