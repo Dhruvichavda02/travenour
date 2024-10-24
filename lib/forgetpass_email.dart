@@ -33,7 +33,9 @@ class ForgotPasswordScreen extends StatefulWidget {
 class _ForgotPasswordState extends State<ForgotPasswordScreen> {
   final _emailController = TextEditingController(); // Email controller
   String? _generatedOTP; // Initialize the OTP as nullable
-  final DatabaseReference dbRef = FirebaseDatabase.instance.ref().child('users'); // Reference to the user table
+  final DatabaseReference dbRef = FirebaseDatabase.instance
+      .ref()
+      .child('users'); // Reference to the user table
 
   // Function to check if the email is registered
   Future<bool> _isEmailRegistered(String email) async {
@@ -43,15 +45,29 @@ class _ForgotPasswordState extends State<ForgotPasswordScreen> {
       final snapshot = await dbRef.get();
 
       if (snapshot.exists) {
-        Map<dynamic, dynamic> data = snapshot.value as Map<dynamic, dynamic>;
-        
-        // Check if the email exists in the database
-        for (var entry in data.entries) {
-          if (entry.value['email']?.toLowerCase() == email.toLowerCase()) {
-            isRegistered = true;
-            break;
+        Map<dynamic, dynamic>? data = snapshot.value as Map<dynamic, dynamic>?;
+
+        if (data != null) {
+          // Iterate over the entries in the Firebase data
+          for (var entry in data.entries) {
+            var userData = entry.value;
+
+            // Check if the userData has an email field
+            if (userData is Map && userData.containsKey('email')) {
+              String dbEmail = userData['email'] as String;
+
+              // Compare emails case-insensitively
+              if (dbEmail.toLowerCase() == email.toLowerCase()) {
+                isRegistered = true;
+                break; // Email found, no need to continue
+              }
+            }
           }
+        } else {
+          print("Error: No user data found in Firebase.");
         }
+      } else {
+        print("Error: No snapshot data found.");
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -71,9 +87,10 @@ class _ForgotPasswordState extends State<ForgotPasswordScreen> {
       return;
     }
 
-    final smtpServer = gmail('dchavda788@rku.ac.in', 'ieyq irim foma rimi'); // Use App Password here
+    final smtpServer = gmail(
+        'vjilka852@rku.ac.in', 'zohz hrkj ebsz ilgk'); // Use App Password here
     final message = Message()
-      ..from = Address('dchavda788@rku.ac.in', 'Travenour')
+      ..from = Address('vjilka852@rku.ac.in', 'Travenour')
       ..recipients.add(email)
       ..subject = 'Your OTP Code'
       ..text = 'Your OTP for resetting your password is $_generatedOTP.';
@@ -89,6 +106,7 @@ class _ForgotPasswordState extends State<ForgotPasswordScreen> {
           builder: (context) => OTPVerificationScreen(
             email: email,
             generatedOTP: _generatedOTP!,
+           
           ),
         ),
       );
@@ -106,7 +124,8 @@ class _ForgotPasswordState extends State<ForgotPasswordScreen> {
       // Check if email is registered in the database
       bool isRegistered = await _isEmailRegistered(email);
       if (isRegistered) {
-        _generatedOTP = (Random().nextInt(9000) + 1000).toString(); // Generate OTP
+        _generatedOTP =
+            (Random().nextInt(9000) + 1000).toString(); // Generate OTP
         await sendOTPEmail(email);
       } else {
         ScaffoldMessenger.of(context).showSnackBar(

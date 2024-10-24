@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 import 'signin.dart';
 
 class CreatePasswordScreen extends StatefulWidget {
-  const CreatePasswordScreen({Key? key}) : super(key: key);
+  final String email; // Added email parameter
+
+  const CreatePasswordScreen({Key? key, required this.email}) : super(key: key);
 
   @override
   State<CreatePasswordScreen> createState() => _CreatePasswordScreenState();
@@ -14,22 +16,41 @@ class _CreatePasswordScreenState extends State<CreatePasswordScreen> {
   bool _isConfirmPasswordVisible = false;
   final TextEditingController _newPasswordController = TextEditingController();
   final TextEditingController _confirmPasswordController = TextEditingController();
-
+  
   String _userId = ''; // Store the user ID here
 
   @override
   void initState() {
     super.initState();
-    // Fetch user ID when the widget is initialized
-    _fetchUserId();
+    _fetchUserId(); // Fetch user ID when the widget is initialized
   }
 
-  void _fetchUserId() {
-    // Here, implement the actual logic to fetch the user ID
-    // Replace this with actual logic to get the user ID, e.g., from the previous screen or session.
-    setState(() {
-      _userId = 'actual_user_id'; // Replace with actual logic
-    });
+  // Fetch the user ID from Firebase based on the provided email
+  void _fetchUserId() async {
+    DatabaseReference dbRef = FirebaseDatabase.instance.ref().child('users');
+
+    try {
+      final snapshot = await dbRef.get();
+
+      if (snapshot.exists) {
+        Map<dynamic, dynamic> data = snapshot.value as Map<dynamic, dynamic>;
+
+        // Iterate through the user entries
+        data.forEach((key, value) {
+          // Check if the email matches
+          if (value['email'] == widget.email) {
+            setState(() {
+              _userId = key; // Store the user ID
+            });
+          }
+        });
+      } else {
+        print('No data available.');
+      }
+    } catch (e) {
+      print('Error fetching user ID: $e');
+      _showErrorDialog('Failed to fetch user information.');
+    }
   }
 
   @override
@@ -59,7 +80,7 @@ class _CreatePasswordScreenState extends State<CreatePasswordScreen> {
                   ),
                   SizedBox(height: screenHeight * 0.06),
                   Text(
-                    'User ID: $_userId',
+                    'Email: ${widget.email}', // Display email passed to the screen
                     style: TextStyle(
                       fontSize: screenWidth * 0.05,
                       color: Colors.white,
@@ -156,20 +177,24 @@ class _CreatePasswordScreenState extends State<CreatePasswordScreen> {
 
     // Check if the new password matches the confirm password
     if (newPassword == confirmPassword) {
-      try {
-        DatabaseReference userRef = FirebaseDatabase.instance.ref().child('users').child(_userId);
+      if (_userId.isNotEmpty) {
+        try {
+          DatabaseReference userRef = FirebaseDatabase.instance.ref().child('users').child(_userId);
 
-        // Update password in the database
-        await userRef.update({'password': newPassword});
+          // Update password in the database
+          await userRef.update({'password': newPassword});
 
-        // Navigate to the sign-in screen after successful update
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => SignInScreen()),
-        );
-      } catch (e) {
-        print('Error updating password: ${e.toString()}');
-        _showErrorDialog('Failed to update password. Please try again.');
+          // Navigate to the sign-in screen after successful update
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => SignInScreen()),
+          );
+        } catch (e) {
+          print('Error updating password: ${e.toString()}');
+          _showErrorDialog('Failed to update password. Please try again.');
+        }
+      } else {
+        _showErrorDialog('User not found. Please try again.');
       }
     } else {
       _showErrorDialog('The new password and confirmation do not match.');

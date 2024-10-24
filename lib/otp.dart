@@ -1,54 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:travenour_app/signin.dart';
-
 import 'CreatePasswordScreen.dart';
-
-void main() {
-  runApp(MyApp());
-}
-
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      home: SignInScreen(), // Assuming you have a sign-in screen to start with
-    );
-  }
-}
-
-class SignInScreen extends StatelessWidget {
-  const SignInScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    // Dummy values for demonstration
-    String email = 'joeyt@gmail.com'; // Replace with actual user input
-    String generatedOTP = '1234'; // Replace with the actual generated OTP
-
-    return Scaffold(
-      appBar: AppBar(title: const Text('Sign In')),
-      body: Center(
-        child: ElevatedButton(
-          onPressed: () {
-            // Navigate to OTPVerificationScreen
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => OTPVerificationScreen(
-                  email: email,
-                  generatedOTP: generatedOTP,
-                ),
-              ),
-            );
-          },
-          child: const Text('Send OTP'),
-        ),
-      ),
-    );
-  }
-}
 
 class OTPVerificationScreen extends StatelessWidget {
   final String email;        // Email parameter
@@ -115,10 +66,15 @@ class OTPVerificationScreen extends StatelessWidget {
               height: 50,
               child: ElevatedButton(
                 onPressed: () {
-                  // Navigate to SignInApp
+                  // Here you should implement your OTP verification logic
+                  // You might want to collect the input from the text fields
+                  // and check it against the generated OTP
+                  // Then navigate to CreatePasswordScreen
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => const CreatePasswordScreen()),
+                    MaterialPageRoute(
+                      builder: (context) => CreatePasswordScreen(email: email), // Pass the email to CreatePasswordScreen
+                    ),
                   );
                 },
                 style: ElevatedButton.styleFrom(

@@ -1,129 +1,129 @@
 import 'package:flutter/material.dart';
-import 'package:travenour_app/signin.dart';
+import 'package:firebase_database/firebase_database.dart'; // For Firebase Realtime Database
 
-void main() {
-  runApp(MyApp());
+import 'signin.dart';
+
+class SignUpScreen extends StatefulWidget {
+  @override
+  _SignUpScreenState createState() => _SignUpScreenState();
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class _SignUpScreenState extends State<SignUpScreen> {
+  final TextEditingController usernameController = TextEditingController();
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
+  final DatabaseReference _dbRef = FirebaseDatabase.instance.ref(); // Reference to Firebase Realtime Database
 
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Sign Up',
-      home: SignUpScreen(),
-    );
+  bool isLoading = false;
+
+  Future<void> _signUp() async {
+    setState(() {
+      isLoading = true;
+    });
+
+    try {
+      String email = emailController.text.trim();
+
+      // Check if email already exists in the database
+      DatabaseReference usersRef = _dbRef.child("users");
+      DataSnapshot snapshot = await usersRef.orderByChild("email").equalTo(email).get();
+
+      if (snapshot.exists) {
+        // Email already exists, show an error message
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Email already exists. Please sign in.")),
+        );
+      } else {
+        // Email does not exist, proceed with the sign-up
+
+        // Create a unique user ID using the push method
+        String userId = _dbRef.child("users").push().key!; // Generate a unique key for the user
+
+        // Store user details in Realtime Database
+        await _dbRef.child("users").child(userId).set({
+          'user_id': userId, // Store user ID
+          'username': usernameController.text.trim(),
+          'email': email, // Store email
+          'password': passwordController.text.trim(), // Hash the password in production
+          'role': 'user', // Default role is user
+        });
+
+        // Navigate to the Sign-In screen
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => SignInScreen()),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Error: $e")),
+      );
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
+    }
   }
-}
-
-class SignUpScreen extends StatelessWidget {
-  const SignUpScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    // Using MediaQuery for responsive layout
-    double height = MediaQuery.of(context).size.height;
-    double width = MediaQuery.of(context).size.width;
+    final double screenHeight = MediaQuery.of(context).size.height;
 
     return Scaffold(
       backgroundColor: Colors.white,
-      body: Center(
+      body: SafeArea(
         child: Padding(
-          padding: EdgeInsets.symmetric(horizontal: width * 0.08),
+          padding: const EdgeInsets.symmetric(horizontal: 20),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Text(
-                'Sign up now',
+                "Sign up now",
                 style: TextStyle(
-                  fontSize: height * 0.03,
+                  fontSize: screenHeight * 0.04,
                   fontWeight: FontWeight.bold,
                 ),
-                textAlign: TextAlign.center,
               ),
-              SizedBox(height: height * 0.01),
-              Text(
-                'Please fill the details and create account',
-                style: TextStyle(
-                  fontSize: height * 0.02,
-                  color: Colors.grey,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              SizedBox(height: height * 0.03),
+              SizedBox(height: screenHeight * 0.02),
               TextField(
+                controller: usernameController,
                 decoration: InputDecoration(
-                  labelText: 'Name',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
+                  labelText: 'Username',
+                  border: OutlineInputBorder(),
                 ),
               ),
-              SizedBox(height: height * 0.02),
+              SizedBox(height: screenHeight * 0.02),
               TextField(
+                controller: emailController,
                 decoration: InputDecoration(
                   labelText: 'Email',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
+                  border: OutlineInputBorder(),
                 ),
               ),
-              SizedBox(height: height * 0.02),
+              SizedBox(height: screenHeight * 0.02),
               TextField(
+                controller: passwordController,
                 obscureText: true,
                 decoration: InputDecoration(
                   labelText: 'Password',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  suffixIcon: const Icon(Icons.visibility_off),
+                  border: OutlineInputBorder(),
                 ),
               ),
-              SizedBox(height: height * 0.01),
-              Text(
-                'Password must be 8 characters',
-                style: TextStyle(
-                  fontSize: height * 0.018,
-                  color: Colors.grey,
-                ),
-                textAlign: TextAlign.left,
-              ),
-              SizedBox(height: height * 0.03),
+              SizedBox(height: screenHeight * 0.02),
               ElevatedButton(
-                onPressed: () {
-                 Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const SignInScreen() ),
-                 );
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue,  // Updated background color
-                  padding: EdgeInsets.symmetric(vertical: height * 0.02),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                ),
-                child: Text(
-                  'Sign Up',
-                  style: TextStyle(fontSize: height * 0.02,
-                  ),
-                ),
+                onPressed: isLoading ? null : _signUp,
+                child: isLoading
+                    ? CircularProgressIndicator()
+                    : Text('Sign Up'),
               ),
-              SizedBox(height: height * 0.02),
-              GestureDetector(
-                onTap: () {
-                  // Handle sign in tap
+              TextButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => SignInScreen()),
+                  );
                 },
-                child: Text(
-                  'Already have an account? Sign in',
-                  style: TextStyle(
-                    fontSize: height * 0.02,
-                    color: Colors.blue,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
+                child: Text("Already have an account? Sign In"),
               ),
             ],
           ),
