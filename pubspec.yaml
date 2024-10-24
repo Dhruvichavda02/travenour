@@ -32,11 +32,13 @@ dependencies:
     sdk: flutter
   fl_chart: ^0.69.0
   url_launcher: ^6.3.0
-  firebase_core: ^2.24.1  # Update to a compatible version
+  firebase_core:  ^2.24.1 # Update to a compatible version
   firebase_database: ^10.5.7  # Update to a compatible version
   image_picker: ^0.8.6  # Update to a compatible version
   mailer: ^5.0.0
-  firebase_storage: ^11.5.0  # Update to a compatible version
+  
+  # firebase_storage: ^11.0.0 # or any other previous stable version
+ # ^11.5.0  # Update to a compatible version
 
  
 

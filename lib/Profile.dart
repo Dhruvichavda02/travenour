@@ -122,4 +122,3 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
 
 // Define the HomeScreen, SearchScreen, and BookingScreen classes
 
-
