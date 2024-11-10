@@ -14,7 +14,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: HomeScreen(), // Set the initial home screen here
+      home: HomeScreen(userId: '',), // Set the initial home screen here
     );
   }
 }
@@ -44,7 +44,7 @@ class _SearchScreenState extends State<SearchScreen> {
             // Navigate back to the HomeScreen
             Navigator.pushReplacement(
               context,
-              MaterialPageRoute(builder: (context) => HomeScreen()), // Change this if needed
+              MaterialPageRoute(builder: (context) => HomeScreen(userId: '',)), // Change this if needed
             );
           },
         ),

@@ -68,7 +68,7 @@ class _TrekDetailsScreenState extends State<TrekDetailsScreen> {
     List facilities = packageDetails!['facilities'] ?? [];
     int totalDays = packageDetails!['total_days'] ?? 0;
     String description = packageDetails!['description'] ?? 'No description available';
-
+    int price =packageDetails!['price'] ?? 0;
     return Scaffold(
       body: SingleChildScrollView(
         child: Column(
@@ -151,6 +151,14 @@ class _TrekDetailsScreenState extends State<TrekDetailsScreen> {
                       fontWeight: FontWeight.bold,
                     ),
                   ),
+                     const SizedBox(height: 16),
+                  Text(
+                    'Price: $price',
+                    style: TextStyle(
+                      fontSize: screenWidth * 0.045,
+                      fontWeight: FontWeight.normal,
+                    ),
+                  ),
                   const SizedBox(height: 16),
                   Text(
                     'Description',
@@ -188,7 +196,7 @@ class _TrekDetailsScreenState extends State<TrekDetailsScreen> {
                   onPressed: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => BookingForm()),
+                      MaterialPageRoute(builder: (context) => BookingForm(packageId: widget.packageId,price: price)),
                     );
                   },
                   child: Text(

@@ -123,33 +123,33 @@ class DatabaseService {
 
   }
 
-   // Function to add a booking
-  Future<void> addBooking({
-    required String bookingId,
-    required String userId,  // Foreign key from user table
-    required String packageId, // Foreign key from package table
-    required int numberOfPeople,
-    required String bookingDate,
-    String amount = 'Paid',  // Default amount set to 'Paid'
-    required String paymentDate,
-    required String paymentType,
-    required String paymentStatus,
-  }) async {
-    try {
-      await _dbRef.child('bookings').child(bookingId).set({
-        'booking_id': bookingId,
-        'user_id': userId,
-        'package_id': packageId,
-        'no_of_people': numberOfPeople,
-        'booking_date': bookingDate,
-        'amount': amount,
-        'payment_date': paymentDate,
-        'payment_type': paymentType,
-        'payment_status': paymentStatus,
-      });
-    } catch (e) {
-      print('Error adding booking: $e');
-      throw e;
-    }
+   Future<void> addBooking({
+  required String bookingId,
+  required String userId,  // Foreign key from user table
+  required String packageId, // Foreign key from package table
+  required int numberOfPeople,
+  required String bookingDate,
+  required String amount,  // Amount (e.g., price * number of people)
+  required String paymentType,
+  required String paymentStatus,
+}) async {
+  try {
+    // Creating a booking entry in the 'bookings' node
+    await _dbRef.child('bookings').child(bookingId).set({
+      'booking_id': bookingId, // Unique booking ID
+      'user_id': userId, // Reference to the user who booked
+      'package_id': packageId, // Reference to the booked package
+      'no_of_people': numberOfPeople, // Number of people for the booking
+      'booking_date': bookingDate, // Booking date
+      'amount': amount, // Total amount (calculated as price * no_of_people)
+      'payment_type': paymentType, // Type of payment (e.g., Credit Card, PayPal)
+      'payment_status': paymentStatus, // Status of the payment (e.g., Paid, Pending)
+    });
+  } catch (e) {
+    print('Error adding booking: $e');
+    throw e;
   }
+}
+
+  
 }

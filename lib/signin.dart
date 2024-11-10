@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'admin/admin_dashboard.dart';
 import 'forgetpass_email.dart';
@@ -24,23 +25,19 @@ class _SignInScreenState extends State<SignInScreen> {
   Future<void> _signIn() async {
     setState(() {
       _isLoading = true;
-      _errorMessage = null; // Reset error message on new login attempt
+      _errorMessage = null;
     });
 
     try {
       String email = _emailController.text.trim();
       String password = _passwordController.text.trim();
 
-      // Fetch all users from the Firebase Realtime Database
       DataSnapshot snapshot = await _databaseRef.child('users').get();
 
       if (snapshot.exists && snapshot.value != null) {
-        // Check the type of the value
         if (snapshot.value is Map<dynamic, dynamic>) {
-          Map<dynamic, dynamic> usersData =
-              snapshot.value as Map<dynamic, dynamic>;
+          Map<dynamic, dynamic> usersData = snapshot.value as Map<dynamic, dynamic>;
 
-          // Find the user by email
           final user = usersData.values.firstWhere(
             (user) =>
                 user is Map &&
@@ -50,15 +47,13 @@ class _SignInScreenState extends State<SignInScreen> {
           );
 
           if (user != null && user is Map) {
-            // Log email and password for comparison
-            print('Entered email: $email, Stored email: ${user['email']}');
-            print(
-                'Entered password: $password, Stored password: ${user['password']}');
-
-            // Validate password
             if (user['password'].toString() == password) {
-              print('Password matched for user: ${user['user_id']}');
-              // Navigate based on the user's role
+              String userId = user['user_id'];
+
+              // Store user_id in shared_preferences
+              SharedPreferences prefs = await SharedPreferences.getInstance();
+              await prefs.setString('user_id', userId);
+
               if (user['role'] == 'admin') {
                 Navigator.pushReplacement(
                   context,
@@ -67,9 +62,7 @@ class _SignInScreenState extends State<SignInScreen> {
               } else {
                 Navigator.pushReplacement(
                   context,
-                  MaterialPageRoute(
-                      builder: (context) =>
-                          HomeScreen()),
+                  MaterialPageRoute(builder: (context) => HomeScreen(userId: userId)),
                 );
               }
             } else {
@@ -79,8 +72,7 @@ class _SignInScreenState extends State<SignInScreen> {
             _setErrorMessage("User not found. Please check your email.");
           }
         } else {
-          _setErrorMessage(
-              "Unexpected data structure. Please contact support.");
+          _setErrorMessage("Unexpected data structure. Please contact support.");
         }
       } else {
         _setErrorMessage("No users found in the database.");
@@ -97,7 +89,7 @@ class _SignInScreenState extends State<SignInScreen> {
   void _setErrorMessage(String message) {
     setState(() {
       _errorMessage = message;
-      print(_errorMessage); // Log the error message
+      print(_errorMessage);
     });
   }
 
@@ -143,14 +135,11 @@ class _SignInScreenState extends State<SignInScreen> {
                 isPassword: true,
               ),
               SizedBox(height: screenHeight * 0.02),
-
-              // Forgot Password Link
               TextButton(
                 onPressed: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(
-                        builder: (context) => ForgotPasswordScreen()),
+                    MaterialPageRoute(builder: (context) => ForgotPasswordScreen()),
                   );
                 },
                 child: Text(
@@ -161,7 +150,6 @@ class _SignInScreenState extends State<SignInScreen> {
                   ),
                 ),
               ),
-
               SizedBox(height: screenHeight * 0.02),
               _isLoading
                   ? CircularProgressIndicator()
