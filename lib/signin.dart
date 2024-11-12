@@ -57,7 +57,7 @@ class _SignInScreenState extends State<SignInScreen> {
               if (user['role'] == 'admin') {
                 Navigator.pushReplacement(
                   context,
-                  MaterialPageRoute(builder: (context) => AdminDashboard()),
+                  MaterialPageRoute(builder: (context) => AdminDashboard(userId: userId)),
                 );
               } else {
                 Navigator.pushReplacement(

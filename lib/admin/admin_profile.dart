@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:firebase_database/firebase_database.dart';
-import 'package:travenour_app/home.dart';
-import 'package:travenour_app/search.dart';
-import 'package:travenour_app/signin.dart'; // Ensure you have this SignIn screen.
+import 'package:travenour_app/signin.dart'; // Ensure SignIn screen is properly imported.
 
 void main() => runApp(AdminProfile());
 
@@ -15,11 +13,7 @@ class AdminProfile extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       home: ProfileEditScreen(),
-      routes: {
-        '/home': (context) => HomeScreen(userId: ''),
-        '/search': (context) => SearchScreen(),
-        '/profile': (context) => ProfileEditScreen(),
-      },
+      
     );
   }
 }
@@ -44,6 +38,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
   }
 
   Future<void> _loadUserIdAndFetchUserData() async {
+    // Load the user_id from SharedPreferences
     SharedPreferences prefs = await SharedPreferences.getInstance();
     userId = prefs.getString('user_id');
     if (userId != null) {
@@ -53,13 +48,15 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
 
   Future<void> _fetchUserData() async {
     try {
+      // Fetch the user data from Firebase Realtime Database
       final snapshot = await _databaseReference.child('users/$userId').get();
       if (snapshot.exists) {
-        final data = snapshot.value as Map;
+        final data = snapshot.value as Map<dynamic, dynamic>;
+
+        // Update the text controllers with fetched data
         setState(() {
           _firstNameController.text = data['username'] ?? '';
           _lastNameController.text = data['email'] ?? '';
-          // We don't need to fetch the profile picture URL because it's not editable
         });
       }
     } catch (error) {
@@ -69,12 +66,11 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
 
   Future<void> _updateUserData() async {
     try {
-      if (_firstNameController.text.isNotEmpty &&
-          _lastNameController.text.isNotEmpty) {
+      // Update data in Firebase Realtime Database
+      if (_firstNameController.text.isNotEmpty && _lastNameController.text.isNotEmpty) {
         final updatedData = {
           'username': _firstNameController.text,
           'email': _lastNameController.text,
-          // No profile picture update as the image is not editable
         };
 
         await _databaseReference.child('users/$userId').update(updatedData);
@@ -164,7 +160,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                     ),
                     CircleAvatar(
                       radius: screenWidth * 0.14,
-                      backgroundImage: AssetImage('assets/admin_profile.jpg'), // Always default image
+                      backgroundImage: AssetImage('assets/admin_profile.jpg'), // Default profile image
                     ),
                   ],
                 ),
@@ -172,7 +168,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
               SizedBox(height: screenHeight * 0.02),
               Center(
                 child: Text(
-                  "${_firstNameController.text} ",
+                  "${_firstNameController.text} ", // Username will be displayed
                   style: TextStyle(
                       fontSize: screenWidth * 0.05,
                       fontWeight: FontWeight.bold),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:travenour_app/admin/add_admin.dart';
 
 import 'admin_dashboard.dart';
 import 'payment_status_screen.dart';
@@ -133,7 +134,7 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
             case 0: // Home
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => AdminDashboard()),
+                MaterialPageRoute(builder: (context) => AdminDashboard(userId: '',)),
               );
               break;
             case 1: // Payment Status
@@ -148,7 +149,7 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
             case 3: // Packing Status
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => PackageDetailsScreen()),
+                MaterialPageRoute(builder: (context) => AddAdminScreen()),
               );
               break;
           }
@@ -158,7 +159,7 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
           BottomNavigationBarItem(icon: Icon(Icons.payment), label: 'Payment Status'),
           BottomNavigationBarItem(icon: Icon(Icons.book), label: 'Booking'),
-          BottomNavigationBarItem(icon: Icon(Icons.check_circle_outline), label: 'Packing Status'),
+          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
         ],
         selectedItemColor: Colors.blue,
         unselectedItemColor: Colors.grey,

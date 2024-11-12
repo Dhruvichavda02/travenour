@@ -11,9 +11,9 @@ class BottomNavBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       // Set AdminDashboard as the home screen
-      home: AdminDashboard(), // Change this line to display AdminDashboard first
+      home: AdminDashboard(userId: '',), // Change this line to display AdminDashboard first
       routes: {
-        '/dashboard': (context) => AdminDashboard(),
+        '/dashboard': (context) => AdminDashboard(userId: '',),
         '/paymentStatus': (context) => PaymentStatusScreen(),
       },
     );

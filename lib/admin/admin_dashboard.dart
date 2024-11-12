@@ -1,20 +1,21 @@
 import 'package:flutter/material.dart';
 import 'add_admin.dart';
+import 'admin_profile.dart';
 import 'booking_details.dart';
-
-
-
-
 import 'pg_detail.dart';
 import 'revenue_screen.dart';
 import 'payment_status_screen.dart';
+import 'user_detail_screen.dart';
 
 void main() {
-  runApp(AdminDashboard());
-  
+  runApp(AdminDashboard(userId: '')); // Pass a sample userId for testing
 }
 
 class AdminDashboard extends StatelessWidget {
+  final String userId;
+
+  AdminDashboard({required this.userId});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -28,26 +29,31 @@ class AdminDashboard extends StatelessWidget {
           leading: IconButton(
             icon: Icon(Icons.arrow_back, color: Colors.black),
             onPressed: () {
-              // Add navigation logic if needed, or remove if not needed
               Navigator.pop(context);
             },
           ),
         ),
-        body: AdminDashboardBody(),
+        body: AdminDashboardBody(userId: userId),
         bottomNavigationBar: BottomNavBar(),
       ),
       routes: {
         '/revenue': (context) => RevenueScreen(),
-        '/refunds_cancel': (context) => AddAdminScreen(), // Ensure RefundsPage is defined
+        '/AddAdminScreen': (context) => AddAdminScreen(),
         '/paymentStatus': (context) => PaymentStatusScreen(),
         '/bookingDetails': (context) => BookingDetailsScreen(),
         '/packageDetails': (context) => PackageDetailsScreen(),
+        '/useroles': (context) => UserDetailsScreen(),
+        '/adminprofile': (context) => ProfileEditScreen(),
       },
     );
   }
 }
 
 class AdminDashboardBody extends StatelessWidget {
+  final String userId;
+
+  AdminDashboardBody({required this.userId});
+
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
@@ -64,6 +70,7 @@ class AdminDashboardBody extends StatelessWidget {
               children: [
                 SizedBox(height: 20),
                 Text(
+                  
                   "Welcome Admin",
                   style: TextStyle(
                     fontSize: 28,
@@ -72,6 +79,7 @@ class AdminDashboardBody extends StatelessWidget {
                   ),
                 ),
                 SizedBox(height: 20),
+                  
               ],
             ),
           ),
@@ -95,7 +103,7 @@ class AdminDashboardBody extends StatelessWidget {
                 icon: Icons.person_outline,
                 title: "User Roles",
                 onTap: () {
-                  // Add navigation if needed
+                  Navigator.pushNamed(context, '/useroles');
                 },
               ),
               _buildDashboardItem(
@@ -109,7 +117,7 @@ class AdminDashboardBody extends StatelessWidget {
                 icon: Icons.person_add,
                 title: "Add Admin",
                 onTap: () {
-                  Navigator.pushNamed(context, '/refunds_cancel');
+                  Navigator.pushNamed(context, '/AddAdminScreen');
                 },
               ),
             ],
@@ -156,14 +164,14 @@ class BottomNavBar extends StatelessWidget {
         BottomNavigationBarItem(icon: Icon(Icons.home_outlined), label: 'Home'),
         BottomNavigationBarItem(icon: Icon(Icons.payment_outlined), label: 'Payment Status'),
         BottomNavigationBarItem(icon: Icon(Icons.book_outlined), label: 'Booking'),
-        BottomNavigationBarItem(icon: Icon(Icons.check_circle_outline), label: 'Package Status'),
+        BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
       ],
       selectedItemColor: Colors.blue,
       unselectedItemColor: Colors.grey,
       onTap: (int index) {
         switch (index) {
           case 0:
-            Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => AdminDashboard()));
+            Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => AdminDashboard(userId: 'sampleUserId')));
             break;
           case 1:
             Navigator.pushNamed(context, '/paymentStatus');
@@ -172,7 +180,7 @@ class BottomNavBar extends StatelessWidget {
             Navigator.pushNamed(context, '/bookingDetails');
             break;
           case 3:
-            Navigator.pushNamed(context, '/packageDetails');
+            Navigator.pushNamed(context, '/adminprofile');
             break;
         }
       },

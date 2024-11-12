@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:travenour_app/admin/add_admin.dart';
+import 'package:travenour_app/admin/admin_dashboard.dart';
+import 'package:travenour_app/admin/booking_details.dart';
 
 class PaymentStatusScreen extends StatefulWidget {
   @override
@@ -10,6 +13,7 @@ class _PaymentStatusScreenState extends State<PaymentStatusScreen> {
   final DatabaseReference _bookingsRef = FirebaseDatabase.instance.ref().child('bookings');
   final DatabaseReference _usersRef = FirebaseDatabase.instance.ref().child('users');
   List<Map<String, dynamic>> transactions = [];
+  int _selectedIndex = 1;  // Keep the Payment Status tab selected
 
   @override
   void initState() {
@@ -87,10 +91,7 @@ class _PaymentStatusScreenState extends State<PaymentStatusScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                 
                   SizedBox(height: 16),
-
-                  
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -114,13 +115,48 @@ class _PaymentStatusScreenState extends State<PaymentStatusScreen> {
                       }).toList(),
                     ),
                   ),
-
-                 
                 ],
               ),
             ),
           ),
         ],
+      ),
+
+      // Bottom Navigation Bar
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: _selectedIndex,  // Set currentIndex to the selected index
+        type: BottomNavigationBarType.fixed,
+        items: const <BottomNavigationBarItem>[
+          BottomNavigationBarItem(icon: Icon(Icons.home_outlined), label: 'Home'),
+          BottomNavigationBarItem(icon: Icon(Icons.payment_outlined), label: 'Payment Status'),
+          BottomNavigationBarItem(icon: Icon(Icons.book_outlined), label: 'Booking'),
+          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
+        ],
+        selectedItemColor: Colors.blue,
+        unselectedItemColor: Colors.grey,
+        onTap: (int index) {
+          setState(() {
+            _selectedIndex = index; // Update selectedIndex when a tab is clicked
+          });
+
+          switch (index) {
+            case 0:
+              Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => AdminDashboard(userId: '',)));
+              break;
+            case 1:
+              // Stay on Payment Status page (already here)
+              Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => PaymentStatusScreen()));
+              break;
+            case 2:
+              // Navigate to Booking Page
+              Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => BookingDetailsScreen()));
+              break;
+            case 3:
+              // Navigate to Profile Page
+              Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => AddAdminScreen()));
+              break;
+          }
+        },
       ),
     );
   }

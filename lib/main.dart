@@ -18,7 +18,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         fontFamily: 'OpenSans',
       ),
-      home: AdminDashboard(),
+      home: SplashScreen(),
       debugShowCheckedModeBanner: false,
     );
   }

@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
 
+import 'admin_dashboard.dart';
+import 'booking_details.dart';
+import 'payment_status_screen.dart';
+
 class AddAdminScreen extends StatefulWidget {
   @override
   _AddAdminScreenState createState() => _AddAdminScreenState();
@@ -139,6 +143,42 @@ class _AddAdminScreenState extends State<AddAdminScreen> {
           ),
         ),
       ),
+      // Bottom Navigation Bar
+      bottomNavigationBar: BottomNavigationBar(
+        type: BottomNavigationBarType.fixed,
+        items: const <BottomNavigationBarItem>[
+           BottomNavigationBarItem(icon: Icon(Icons.home_outlined), label: 'Home'),
+          BottomNavigationBarItem(icon: Icon(Icons.payment_outlined), label: 'Payment Status'),
+          BottomNavigationBarItem(icon: Icon(Icons.book_outlined), label: 'Booking'),
+          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
+        ],
+        selectedItemColor: Colors.blue,
+        unselectedItemColor: Colors.grey,
+        onTap: (int index) {
+         switch (index) {
+            case 0:
+              Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => AdminDashboard(userId: '',)));
+              break;
+            case 1:
+              // Stay on Payment Status page (already here)
+              Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => PaymentStatusScreen()));
+              break;
+            case 2:
+              // Navigate to Booking Page
+              Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => BookingDetailsScreen()));
+              break;
+            case 3:
+              // Navigate to Profile Page
+              Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => AddAdminScreen()));
+              break;
+          }
+        },
+      ),
     );
   }
 }
+
+void main() => runApp(MaterialApp(
+      debugShowCheckedModeBanner: false,
+      home: AddAdminScreen(),
+    ));

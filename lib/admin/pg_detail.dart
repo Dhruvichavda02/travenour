@@ -213,7 +213,7 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
             case 0:
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => AdminDashboard()),
+                MaterialPageRoute(builder: (context) => AdminDashboard(userId: '',)),
               );
               break;
             case 1:
