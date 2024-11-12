@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:travenour_app/SplashScreen.dart';
+import 'package:travenour_app/admin/admin_dashboard.dart';
   
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -17,7 +18,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         fontFamily: 'OpenSans',
       ),
-      home: SplashScreen(),
+      home: AdminDashboard(),
       debugShowCheckedModeBanner: false,
     );
   }

@@ -1,6 +1,6 @@
 import 'dart:io';
 import 'package:firebase_database/firebase_database.dart';
-// import 'package:firebase_storage/firebase_storage.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 
 class DatabaseService {
   final DatabaseReference _dbRef = FirebaseDatabase.instance.ref();
@@ -73,55 +73,56 @@ class DatabaseService {
     }
     return null;
   }
+Future<void> addPackage({
+  required String packageName,
+  required String description,
+  required String categoryId,
+  required double price,
+  required List<String> facilities,
+  required String startDate,
+  required String endDate,
+  required int totalDays,
+  required int seatLimit,
+  File? imageFile, // Keep this if you need to upload the image directly
+  String? imageUrl, // Add this parameter
+}) async {
+  try {
+    String packageId = _dbRef.child('packages').push().key!;
 
-  // Function to add a new package
-  Future<void> addPackage({
-    required String packageName,
-    required String description,
-    required String categoryId,
-    required double price,
-    required List<String> facilities,
-    required String startDate,
-    required String endDate,
-    required int totalDays,
-    required int seatLimit,
-    File? imageFile,
-  }) async {
-    try {
-      String packageId = _dbRef.child('packages').push().key!;
-
-      final packageData = {
-        'package_id': packageId,
-        'package_name': packageName,
-        'description': description,
-        'category_id': categoryId,
-        'price': price,
-        'facilities': facilities,
-        'start_date': startDate,
-        'end_date': endDate,
-        'total_days': totalDays,
-        'seat_limit': seatLimit,
-      };
-
-      await _dbRef.child('packages').child(packageId).set(packageData);
-    } catch (e) {
-      print('Error adding package: $e');
-      throw e;
-    }
-  }
-
-   Future<List<Map<String, dynamic>>> getPackagesByCategory(String categoryId) async {
-    List<Map<String, dynamic>> packages = [];
-    DataSnapshot snapshot = await dbRef.child('packages').orderByChild('categoryId').equalTo(categoryId).get();
-    if (snapshot.value != null) {
-      Map<dynamic, dynamic> packageMap = snapshot.value as Map<dynamic, dynamic>;
-      packageMap.forEach((key, value) {
-        packages.add(Map<String, dynamic>.from(value));
+    // If `imageFile` is provided, upload it and set `imageUrl`
+    if (imageFile != null && imageUrl == null) {
+      final storageRef = FirebaseStorage.instance.ref().child('package_images/$packageId');
+      await storageRef.putFile(imageFile).then((taskSnapshot) async {
+        imageUrl = await taskSnapshot.ref.getDownloadURL();
+        print("Image uploaded. URL: $imageUrl");
+      }).catchError((e) {
+        print("Error uploading image: $e");
+        throw e;
       });
     }
-    return packages;
 
+    final packageData = {
+      'package_id': packageId,
+      'package_name': packageName,
+      'description': description,
+      'category_id': categoryId,
+      'price': price,
+      'facilities': facilities,
+      'start_date': startDate,
+      'end_date': endDate,
+      'total_days': totalDays,
+      'seat_limit': seatLimit,
+      'imageurl': imageUrl, // Store the image URL
+    };
+
+    await _dbRef.child('packages').child(packageId).set(packageData);
+    print("Package added successfully.");
+  } catch (e) {
+    print('Error adding package: $e');
+    throw e;
   }
+}
+
 
    Future<void> addBooking({
   required String bookingId,

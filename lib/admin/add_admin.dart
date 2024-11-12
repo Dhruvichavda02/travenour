@@ -1,175 +1,144 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_database/firebase_database.dart';
 
-void main() {
-  runApp(const MyApp());
+class AddAdminScreen extends StatefulWidget {
+  @override
+  _AddAdminScreenState createState() => _AddAdminScreenState();
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class _AddAdminScreenState extends State<AddAdminScreen> {
+  final TextEditingController usernameController = TextEditingController();
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
+  final DatabaseReference usersRef = FirebaseDatabase.instance.ref().child('users');
 
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Profile',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
-      home: const EditProfileScreen(),
-    );
+  final _formKey = GlobalKey<FormState>(); // Key to manage form validation state
+
+  bool _isEmailValid(String email) {
+    final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+    return emailRegex.hasMatch(email);
   }
-}
 
-class EditProfileScreen extends StatelessWidget {
-  const EditProfileScreen({super.key});
+  void addAdmin() {
+    if (_formKey.currentState!.validate()) {
+      String username = usernameController.text.trim();
+      String email = emailController.text.trim();
+      String password = passwordController.text.trim();
+      String role = "admin";
+
+      String userId = usersRef.push().key!;
+
+      usersRef.child(userId).set({
+        'user_id': userId,
+        'username': username,
+        'email': email,
+        'password': password,
+        'role': role,
+      }).then((_) {
+        usernameController.clear();
+        emailController.clear();
+        passwordController.clear();
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Admin added successfully!')),
+        );
+      }).catchError((error) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to add admin: $error')),
+        );
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    var screenSize = MediaQuery.of(context).size;
-
     return Scaffold(
       appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () {
-            Navigator.of(context).pop();
-          },
-        ),
-        title: const Text("Edit Profile"),
+        title: Text('Add Admin'),
+        backgroundColor: Colors.blue,
       ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(20.0),
-          child: Center(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                // Profile Picture Section
-                CircleAvatar(
-                  radius: screenSize.width * 0.15, // Responsive radius
-                  backgroundImage: const NetworkImage(
-                    'https://via.placeholder.com/150', // Placeholder for profile pic
-                  ),
-                ),
-                const SizedBox(height: 10),
-                Text(
-                  "Vaibhavi Jilka",
-                  style: TextStyle(
-                    fontSize: screenSize.width * 0.06, // Responsive font size
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 5),
-                TextButton(
-                  onPressed: () {
-                    // Handle change profile picture action
-                  },
-                  child: const Text(
-                    "Change Profile Picture",
-                    style: TextStyle(color: Colors.blue),
-                  ),
-                ),
-                const SizedBox(height: 20),
-
-                // First Name Field
-                _buildTextField(
-                  context: context,
-                  label: "Name",
-                  value: "Enter Your Name",
-                ),
-                const SizedBox(height: 15),
-
-                // Last Name Field
-                _buildTextField(
-                  context: context,
-                  label: "Email",
-                  value: "Enter Your Email",
-                ),
-                const SizedBox(height: 15),
-
-                // Location Field
-                _buildTextField(
-                  context: context,
-                  label: "Password",
-                  value: "Enter Your Password",
-                ),
-                const SizedBox(height: 15),
-
-                const SizedBox(height: 30),
-                // You can add save button here
-                ElevatedButton(
-                  onPressed: () {
-                    // Handle save action
-                  },
-                  child: const Text("Add Admin"),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-        items: const <BottomNavigationBarItem>[
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'Home',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.payment),
-            label: 'Payment Status',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.book),
-            label: 'Booking',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: 'Profile',
-          ),
-        ],
-        selectedItemColor: Colors.blue,
-        unselectedItemColor: Colors.grey,
-        showUnselectedLabels: true,
-      ),
-    );
-  }
-
-  Widget _buildTextField({
-    required BuildContext context,
-    required String label,
-    required String value,
-  }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: const TextStyle(
-            fontSize: 16,
-            color: Colors.blue,
-          ),
-        ),
-        const SizedBox(height: 5),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
-          decoration: BoxDecoration(
-            border: Border.all(color: Colors.blue),
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Form(
+          key: _formKey,
+          child: Column(
             children: [
               Text(
-                value,
-                style: const TextStyle(fontSize: 16),
+                'Enter Admin Details',
+                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
               ),
-              const Icon(
-                Icons.check,
-                color: Colors.blue,
+              SizedBox(height: 20),
+              TextFormField(
+                controller: usernameController,
+                decoration: InputDecoration(
+                  labelText: 'Username',
+                  border: OutlineInputBorder(),
+                  prefixIcon: Icon(Icons.person),
+                ),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter a username';
+                  }
+                  return null;
+                },
+              ),
+              SizedBox(height: 15),
+              TextFormField(
+                controller: emailController,
+                decoration: InputDecoration(
+                  labelText: 'Email',
+                  border: OutlineInputBorder(),
+                  prefixIcon: Icon(Icons.email),
+                ),
+                keyboardType: TextInputType.emailAddress,
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter an email';
+                  } else if (!_isEmailValid(value)) {
+                    return 'Please enter a valid email';
+                  }
+                  return null;
+                },
+              ),
+              SizedBox(height: 15),
+              TextFormField(
+                controller: passwordController,
+                decoration: InputDecoration(
+                  labelText: 'Password',
+                  border: OutlineInputBorder(),
+                  prefixIcon: Icon(Icons.lock),
+                ),
+                obscureText: true,
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter a password';
+                  } else if (value.length < 6) {
+                    return 'Password must be at least 6 characters long';
+                  }
+                  return null;
+                },
+              ),
+              SizedBox(height: 25),
+              Center( // Center the button
+                child: ElevatedButton(
+                  onPressed: addAdmin,
+                  style: ElevatedButton.styleFrom(
+                    padding: EdgeInsets.symmetric(horizontal: 40, vertical: 15),
+                    backgroundColor: Colors.blue,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  child: Text(
+                    'Add Admin',
+                    style: TextStyle(fontSize: 18, color: Colors.white),
+                  ),
+                ),
               ),
             ],
           ),
         ),
-      ],
+      ),
     );
   }
 }

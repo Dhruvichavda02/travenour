@@ -73,7 +73,7 @@ class _BottomNavBarWidgetState extends State<BottomNavBarWidget> {
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.check_circle_outline),
-            label: 'Packing Status',
+            label: 'Profile',
           ),
         ],
         currentIndex: _selectedIndex,

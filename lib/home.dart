@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:travenour_app/Bookings.dart';
+import 'package:travenour_app/Bookings_user.dart';
 import 'package:travenour_app/HomeScreenContent.dart';
 import 'package:travenour_app/Profile.dart';
 import 'package:travenour_app/search.dart';

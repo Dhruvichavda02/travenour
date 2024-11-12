@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import 'add_admin.dart';
 import 'booking_details.dart';
-import 'cancel_refund_screen.dart';
+
 
 
 
@@ -37,7 +38,7 @@ class AdminDashboard extends StatelessWidget {
       ),
       routes: {
         '/revenue': (context) => RevenueScreen(),
-        '/refunds_cancel': (context) => RefundsPage(), // Ensure RefundsPage is defined
+        '/refunds_cancel': (context) => AddAdminScreen(), // Ensure RefundsPage is defined
         '/paymentStatus': (context) => PaymentStatusScreen(),
         '/bookingDetails': (context) => BookingDetailsScreen(),
         '/packageDetails': (context) => PackageDetailsScreen(),
@@ -105,8 +106,8 @@ class AdminDashboardBody extends StatelessWidget {
                 },
               ),
               _buildDashboardItem(
-                icon: Icons.money_off_outlined,
-                title: "Cancellation & Refunds",
+                icon: Icons.person_add,
+                title: "Add Admin",
                 onTap: () {
                   Navigator.pushNamed(context, '/refunds_cancel');
                 },

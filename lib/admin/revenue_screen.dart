@@ -1,7 +1,45 @@
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
-import 'package:fl_chart/fl_chart.dart'; // Add fl_chart package for the line chart
+import 'package:fl_chart/fl_chart.dart';
 
 class RevenueScreen extends StatelessWidget {
+  // Function to fetch booking data from Firebase Realtime Database
+Future<List<Map<String, dynamic>>> fetchBookingData() async {
+  try {
+    final DatabaseReference database = FirebaseDatabase.instance.ref('bookings');
+    DataSnapshot snapshot = await database.get();
+    
+    List<Map<String, dynamic>> bookingData = [];
+    if (snapshot.exists) {
+      Map<dynamic, dynamic> data = snapshot.value as Map<dynamic, dynamic>;
+      data.forEach((key, value) {
+        String bookingDate = value['booking_date']; // dd/mm/yy format
+        int year = _extractYear(bookingDate); // Extract year from booking_date
+        
+        bookingData.add({
+          'year': year,   // Add extracted year
+          'amount': value['amount'], // Assuming 'amount' field is present
+        });
+      });
+    }
+    return bookingData;
+  } catch (e) {
+    print('Error fetching data: $e');
+    return [];
+  }
+}
+
+// Helper function to extract the year from dd/mm/yy format
+int _extractYear(String date) {
+  try {
+    List<String> dateParts = date.split('/'); // Split by '/'
+    int year = int.parse(dateParts[2]); // Year is in the 3rd part
+    return year;
+  } catch (e) {
+    print('Error extracting year from date: $e');
+    return 0; // Return 0 in case of an error (fallback value)
+  }
+}
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -11,25 +49,25 @@ class RevenueScreen extends StatelessWidget {
         leading: IconButton(
           icon: Icon(Icons.arrow_back),
           onPressed: () {
-            Navigator.pop(context); // Navigate back to the previous screen
+            Navigator.pop(context);
           },
         ),
       ),
       bottomNavigationBar: BottomNavigationBar(
-        currentIndex: 0, // Add an index to manage selected item
+        currentIndex: 0,
         onTap: (index) {
           switch (index) {
             case 0:
               Navigator.pop(context); // Go back to Home
               break;
             case 1:
-              Navigator.pushNamed(context, '/paymentStatus'); // Navigate to Payment Status
+              Navigator.pushNamed(context, '/paymentStatus');
               break;
             case 2:
-              Navigator.pushNamed(context, '/bookingDetails'); // Navigate to Booking Details
+              Navigator.pushNamed(context, '/bookingDetails');
               break;
             case 3:
-              Navigator.pushNamed(context, '/packageDetails'); // Navigate to Package Status
+              Navigator.pushNamed(context, '/packageDetails');
               break;
           }
         },
@@ -52,10 +90,31 @@ class RevenueScreen extends StatelessWidget {
           ),
         ],
       ),
-      body: LayoutBuilder(
-        builder: (context, constraints) {
-          double width = constraints.maxWidth;
-          double height = constraints.maxHeight;
+      body: FutureBuilder<List<Map<String, dynamic>>>(
+        future: fetchBookingData(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Center(child: CircularProgressIndicator());
+          }
+
+          if (snapshot.hasError) {
+            return Center(child: Text('Error: ${snapshot.error}'));
+          }
+
+          if (!snapshot.hasData || snapshot.data!.isEmpty) {
+            return Center(child: Text('No data available'));
+          }
+
+          List<Map<String, dynamic>> bookingData = snapshot.data!;
+
+          // Prepare data for the chart
+       // Prepare data for the chart
+List<FlSpot> spots = [];
+for (int i = 0; i < bookingData.length; i++) {
+  spots.add(FlSpot(i.toDouble(), bookingData[i]['amount']?.toDouble() ?? 0.0)); // Safely convert to double
+}
+
+
 
           return SingleChildScrollView(
             child: Column(
@@ -75,21 +134,22 @@ class RevenueScreen extends StatelessWidget {
                   child: Column(
                     children: [
                       Text(
-                        'Gross Profit',
+                        'Income',
                         style: TextStyle(
                           color: Colors.white,
-                          fontSize: width * 0.06, // Responsive font size
+                          fontSize: 24, // Fixed font size for consistency
                         ),
                       ),
                       SizedBox(height: 10),
                       Text(
-                        '₹5,00,000',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: width * 0.1, // Responsive large text
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
+  '₹${bookingData.fold(0.0, (sum, item) => sum + (item['amount']?.toDouble() ?? 0.0))}',  // Ensure sum is a double
+  style: TextStyle(
+    color: Colors.white,
+    fontSize: 32,
+    fontWeight: FontWeight.bold,
+  ),
+),
+
                     ],
                   ),
                 ),
@@ -103,72 +163,50 @@ class RevenueScreen extends StatelessWidget {
                       Text(
                         'Yearly Revenue',
                         style: TextStyle(
-                          fontSize: width * 0.05,
+                          fontSize: 18,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
                       SizedBox(height: 20),
                       Container(
-                        height: height * 0.4, // Responsive chart height
+                        height: 300, // Chart height
                         child: LineChart(
                           LineChartData(
-                            gridData: FlGridData(show: true),
-                            titlesData: FlTitlesData(
-                              bottomTitles: AxisTitles(
-                                sideTitles: SideTitles(
-                                  showTitles: true,
-                                  getTitlesWidget: (value, meta) {
-                                    switch (value.toInt()) {
-                                      case 0:
-                                        return Text('2016');
-                                      case 1:
-                                        return Text('2017');
-                                      case 2:
-                                        return Text('2018');
-                                      case 3:
-                                        return Text('2019');
-                                      case 4:
-                                        return Text('2020');
-                                      case 5:
-                                        return Text('2021');
-                                    }
-                                    return Container();
-                                  },
-                                  reservedSize: 30,
-                                ),
-                              ),
-                              leftTitles: AxisTitles(
-                                sideTitles: SideTitles(
-                                  showTitles: true,
-                                  interval: 10000,
-                                  getTitlesWidget: (value, meta) {
-                                    if (value % 10000 == 0) {
-                                      return Text(value.toString());
-                                    }
-                                    return Container();
-                                  },
-                                  reservedSize: 40,
-                                ),
-                              ),
-                            ),
-                            borderData: FlBorderData(show: false),
-                            lineBarsData: [
-                              LineChartBarData(
-                                spots: [
-                                  FlSpot(0, 10000),
-                                  FlSpot(1, 15000),
-                                  FlSpot(2, 18000),
-                                  FlSpot(3, 25000),
-                                  FlSpot(4, 23000),
-                                  FlSpot(5, 35000),
-                                ],
-                                isCurved: true,
-                                barWidth: 4,
-                                color: Colors.blue, // Chart color
-                                dotData: FlDotData(show: false),
-                              ),
-                            ],
-                          ),
+  gridData: FlGridData(show: true),
+  titlesData: FlTitlesData(
+    bottomTitles: AxisTitles(
+      sideTitles: SideTitles(
+        showTitles: true,
+        getTitlesWidget: (value, meta) {
+          int year = bookingData[value.toInt()]['year'];
+          return Text(year.toString()); // Display the year
+        },
+        reservedSize: 30,
+      ),
+    ),
+    leftTitles: AxisTitles(
+      sideTitles: SideTitles(
+        showTitles: true,
+        interval: 5000,
+        getTitlesWidget: (value, meta) {
+          return Text(value.toString());
+        },
+        reservedSize: 40,
+      ),
+    ),
+  ),
+  borderData: FlBorderData(show: false),
+  lineBarsData: [
+    LineChartBarData(
+      spots: spots,
+      isCurved: true,
+      barWidth: 4,
+      color: Colors.blue,
+      dotData: FlDotData(show: false),
+    ),
+  ],
+)
+
                         ),
                       ),
                     ],
