@@ -41,7 +41,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
             }
 
             final package = {
-              'imageUrl': packageData['image_url'] ?? 'assets/default.png',
+              'imageUrl': packageData['imageurl'] ?? 'assets/havelock.png',
               'dateRange': packageData['date_range'] ?? '',
               'seatLeft': packageData['seat_limit'] ?? 0,
               'categoryName': categoryName,
@@ -117,7 +117,6 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                   if (categoryPackages.isNotEmpty) {
                     final firstPackage = categoryPackages[0]; // Use the first package to represent the category
                     return CategoryCard(
-                      imageUrl: firstPackage['imageUrl'],
                       categoryName: firstPackage['categoryName'],
                       categoryId: firstPackage['categoryId'],
                       totalPackages: categoryPackages.length,
@@ -160,16 +159,15 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
   }
 }
 
-// Updated CategoryCard to navigate to the next screen with category_id
+
+
 class CategoryCard extends StatelessWidget {
-  final String imageUrl;
   final String categoryName;
   final String categoryId;
   final int totalPackages;
 
   const CategoryCard({
     super.key,
-    required this.imageUrl,
     required this.categoryName,
     required this.categoryId,
     required this.totalPackages,
@@ -193,58 +191,69 @@ class CategoryCard extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.only(bottom: 16.0),
         child: Card(
-          elevation: 4,
+          elevation: 8,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(15),
+            borderRadius: BorderRadius.circular(12),
           ),
-          child: Row(
-            children: [
-              Container(
-                width: screenWidth * 0.3,
-                height: screenHeight * 0.15,
-                decoration: BoxDecoration(
-                  borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(15),
-                    bottomLeft: Radius.circular(15),
-                  ),
-                  image: DecorationImage(
-                    image: AssetImage(imageUrl),
-                    fit: BoxFit.cover,
-                  ),
-                ),
-              ),
-              SizedBox(width: screenWidth * 0.05),
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        categoryName,
-                        style: TextStyle(
-                          fontSize: screenWidth * 0.045,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      SizedBox(height: screenHeight * 0.005),
-                      Text(
-                        'Total Packages: $totalPackages',
-                        style: TextStyle(
-                          fontSize: screenWidth * 0.035,
-                          color: Colors.grey,
-                        ),
+          color: Colors.blueAccent, // Background color for the card
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 12.0),
+            child: Row(
+              children: [
+                Container(
+                  width: screenWidth * 0.14, // Smaller size
+                  height: screenHeight * 0.14, // Smaller size
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.2),
+                        spreadRadius: 2,
+                        blurRadius: 8,
+                        offset: Offset(0, 4),
                       ),
                     ],
                   ),
+                  child: Icon(
+                    Icons.airplane_ticket, // Airplane icon for travel
+                    color: Colors.blueAccent,
+                    size: screenWidth * 0.08,
+                  ),
                 ),
-              ),
-            ],
+                SizedBox(width: screenWidth * 0.05),
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          categoryName,
+                          style: TextStyle(
+                            fontSize: screenWidth * 0.045, // Slightly smaller font size
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        SizedBox(height: screenHeight * 0.01),
+                        Text(
+                          'Packages: $totalPackages',
+                          style: TextStyle(
+                            fontSize: screenWidth * 0.035, // Smaller font size
+                            color: Colors.white70,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
     );
   }
 }
-
-

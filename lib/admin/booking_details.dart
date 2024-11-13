@@ -4,7 +4,7 @@ import 'package:travenour_app/admin/add_admin.dart';
 
 import 'admin_dashboard.dart';
 import 'payment_status_screen.dart';
-import 'pg_detail.dart';
+// import 'pg_detail.dart';
 
 void main() {
   runApp(MyApp());

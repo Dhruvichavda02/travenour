@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-// import 'package:travenour_app/Bookings.dart';
-// import 'package:travenour_app/Profile.dart';
-// import 'package:travenour_app/books.dart';
-// import 'package:travenour_app/search.dart';
+// Import CategoriesScreen here if needed
+
+
+import 'categories.dart';
 
 class HomeScreenContent extends StatelessWidget {
   const HomeScreenContent({super.key});
@@ -61,23 +61,45 @@ class HomeScreenContent extends StatelessWidget {
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  Text(
-                    "View all",
-                    style: TextStyle(
-                      fontSize: bodyFontSize * 0.9,
-                      color: Colors.blue,
+                  GestureDetector(
+                    onTap: () {
+                      // Navigate to CategoriesScreen when tapped
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => CategoriesScreen(),
+                        ),
+                      );
+                    },
+                    child: Text(
+                      "View all",
+                      style: TextStyle(
+                        fontSize: bodyFontSize * 0.9,
+                        color: Colors.blue,
+                      ),
                     ),
                   ),
                 ],
               ),
               SizedBox(height: screenHeight * 0.06),
-              Container(
-                height: screenHeight * 0.3,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(16),
-                  image: const DecorationImage(
-                    image: AssetImage('assets/alleppey_image.png'),
-                    fit: BoxFit.cover,
+              GestureDetector(
+                onTap: () {
+                  // Navigate to CategoriesScreen when tapped
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => CategoriesScreen(),
+                    ),
+                  );
+                },
+                child: Container(
+                  height: screenHeight * 0.3,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(16),
+                    image: const DecorationImage(
+                      image: AssetImage('assets/alleppey_image.png'),
+                      fit: BoxFit.cover,
+                    ),
                   ),
                 ),
               ),

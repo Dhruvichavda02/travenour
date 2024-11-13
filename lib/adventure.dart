@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
-
-import 'adventure_pk1.dart';
- // Import the TrekDetailsScreen
-
+import 'adventure_pk1.dart'; // Import the TrekDetailsScreen
+import 'dart:convert';
 void main() => runApp(MyApp());
 
 class MyApp extends StatelessWidget {
@@ -55,8 +53,8 @@ class _AdventureTripScreenState extends State<AdventureTripScreen> {
             'startDate': value['start_date'],   // Fetch start_date
             'endDate': value['end_date'],       // Fetch end_date
             'price': value['price'].toString(), // Convert price to string
-            'details': value['description'],
-            'imageUrl': value['image_url'],     // Assuming imageUrl exists in Firebase
+            // 'details': value['description'],
+            'imageUrl': value['imageurl'],     // Assuming imageUrl exists in Firebase
           });
         });
 
@@ -82,11 +80,10 @@ class _AdventureTripScreenState extends State<AdventureTripScreen> {
 
   // Navigate to TrekDetailsScreen with package_id
   void _navigateToDetailsScreen(String packageId) {
-   Navigator.push(
-  context,
-  MaterialPageRoute(builder: (context) => TrekDetailsScreen(packageId: packageId)), // Use widget.categoryId
-);
-
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => TrekDetailsScreen(packageId: packageId)), // Use widget.categoryId
+    );
   }
 
   @override
@@ -141,7 +138,8 @@ class _AdventureTripScreenState extends State<AdventureTripScreen> {
                             startDate: package['startDate'],  // Pass startDate
                             endDate: package['endDate'],      // Pass endDate
                             price: package['price'],           // Pass price
-                            details: package['details'],
+                           
+                            imageUrl: package['imageurl'],    // Pass imageUrl
                           ),
                         );
                       },
@@ -181,10 +179,10 @@ class _AdventureTripScreenState extends State<AdventureTripScreen> {
 
 class TripCard extends StatelessWidget {
   final String title;
-  final String startDate;  // Add startDate
-  final String endDate;    // Add endDate
+  final String startDate;
+  final String endDate;
   final String price;
-  final String details;
+  final String? imageUrl;
 
   const TripCard({
     super.key,
@@ -192,13 +190,16 @@ class TripCard extends StatelessWidget {
     required this.startDate,
     required this.endDate,
     required this.price,
-    required this.details,
+    this.imageUrl,
   });
 
   @override
   Widget build(BuildContext context) {
     var screenWidth = MediaQuery.of(context).size.width;
     var screenHeight = MediaQuery.of(context).size.height;
+
+    // Get the image provider based on the imageUrl
+    final imageProvider = _getImageProvider(imageUrl);
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 16.0),
@@ -209,7 +210,7 @@ class TripCard extends StatelessWidget {
         ),
         child: Row(
           children: [
-            // Image container, if required
+            // Image section - Use ImageProvider to display the image
             Container(
               width: screenWidth * 0.25,
               height: screenHeight * 0.15,
@@ -217,6 +218,10 @@ class TripCard extends StatelessWidget {
                 borderRadius: const BorderRadius.only(
                   topLeft: Radius.circular(15),
                   bottomLeft: Radius.circular(15),
+                ),
+                image: DecorationImage(
+                  image: imageProvider, // Use the selected ImageProvider
+                  fit: BoxFit.cover,  // Make sure the image covers the container area
                 ),
               ),
             ),
@@ -244,13 +249,6 @@ class TripCard extends StatelessWidget {
                     ),
                     Text(
                       'End: $endDate',      // Display end date
-                      style: TextStyle(
-                        fontSize: screenWidth * 0.035,
-                        color: Colors.grey,
-                      ),
-                    ),
-                    Text(
-                      details,
                       style: TextStyle(
                         fontSize: screenWidth * 0.035,
                         color: Colors.grey,
@@ -288,4 +286,26 @@ class TripCard extends StatelessWidget {
       ),
     );
   }
+
+  // Helper function to decide how to load the image
+  ImageProvider<Object> _getImageProvider(String? imageUrl) {
+    if (imageUrl == null || imageUrl.isEmpty) {
+      return AssetImage('assets/coorg.png');
+    }
+
+    // Check if the URL starts with 'http' for a Network Image
+    if (imageUrl.startsWith('http') || imageUrl.startsWith('https')) {
+      print("Network Image URL: $imageUrl");  // Debug print
+      return NetworkImage(imageUrl);
+    }
+
+    try {
+      base64Decode(imageUrl); // Try to decode base64 if needed
+      return MemoryImage(base64Decode(imageUrl));
+    } catch (e) {
+      print("Error decoding base64 image: $e");
+      return AssetImage('assets/coorg.png');  // Fallback on error
+    }
+  }
 }
+

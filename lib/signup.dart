@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_database/firebase_database.dart'; // For Firebase Realtime Database
-
+import 'package:firebase_database/firebase_database.dart';
 import 'signin.dart';
 
 class SignUpScreen extends StatefulWidget {
@@ -12,57 +11,80 @@ class _SignUpScreenState extends State<SignUpScreen> {
   final TextEditingController usernameController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
-  final DatabaseReference _dbRef = FirebaseDatabase.instance.ref(); // Reference to Firebase Realtime Database
+  final DatabaseReference _dbRef = FirebaseDatabase.instance.ref();
 
   bool isLoading = false;
 
+  final _formKey = GlobalKey<FormState>();
+
   Future<void> _signUp() async {
-    setState(() {
-      isLoading = true;
-    });
-
-    try {
-      String email = emailController.text.trim();
-
-      // Check if email already exists in the database
-      DatabaseReference usersRef = _dbRef.child("users");
-      DataSnapshot snapshot = await usersRef.orderByChild("email").equalTo(email).get();
-
-      if (snapshot.exists) {
-        // Email already exists, show an error message
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Email already exists. Please sign in.")),
-        );
-      } else {
-        // Email does not exist, proceed with the sign-up
-
-        // Create a unique user ID using the push method
-        String userId = _dbRef.child("users").push().key!; // Generate a unique key for the user
-
-        // Store user details in Realtime Database
-        await _dbRef.child("users").child(userId).set({
-          'user_id': userId, // Store user ID
-          'username': usernameController.text.trim(),
-          'email': email, // Store email
-          'password': passwordController.text.trim(), // Hash the password in production
-          'role': 'user', // Default role is user
-        });
-
-        // Navigate to the Sign-In screen
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => SignInScreen()),
-        );
-      }
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Error: $e")),
-      );
-    } finally {
+    if (_formKey.currentState!.validate()) {
       setState(() {
-        isLoading = false;
+        isLoading = true;
       });
+
+      try {
+        String email = emailController.text.trim();
+        DatabaseReference usersRef = _dbRef.child("users");
+        DataSnapshot snapshot = await usersRef.orderByChild("email").equalTo(email).get();
+
+        if (snapshot.exists) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("Email already exists. Please sign in.")),
+          );
+        } else {
+          String userId = _dbRef.child("users").push().key!;
+          await _dbRef.child("users").child(userId).set({
+            'user_id': userId,
+            'username': usernameController.text.trim(),
+            'email': email,
+            'password': passwordController.text.trim(),
+            'role': 'user',
+          });
+
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => SignInScreen()),
+          );
+        }
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Error: $e")),
+        );
+      } finally {
+        setState(() {
+          isLoading = false;
+        });
+      }
     }
+  }
+
+  String? _validateEmail(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Email is required';
+    }
+    final emailRegex = RegExp(r'^[^@]+@[^@]+\.[^@]+');
+    if (!emailRegex.hasMatch(value)) {
+      return 'Enter a valid email address';
+    }
+    return null;
+  }
+
+  String? _validateUsername(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Username is required';
+    }
+    return null;
+  }
+
+  String? _validatePassword(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Password is required';
+    }
+    if (value.length < 6) {
+      return 'Password must be at least 6 characters';
+    }
+    return null;
   }
 
   @override
@@ -74,58 +96,64 @@ class _SignUpScreenState extends State<SignUpScreen> {
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                "Sign up now",
-                style: TextStyle(
-                  fontSize: screenHeight * 0.04,
-                  fontWeight: FontWeight.bold,
+          child: Form(
+            key: _formKey,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  "Sign up now",
+                  style: TextStyle(
+                    fontSize: screenHeight * 0.04,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
-              ),
-              SizedBox(height: screenHeight * 0.02),
-              TextField(
-                controller: usernameController,
-                decoration: InputDecoration(
-                  labelText: 'Username',
-                  border: OutlineInputBorder(),
+                SizedBox(height: screenHeight * 0.02),
+                TextFormField(
+                  controller: usernameController,
+                  decoration: InputDecoration(
+                    labelText: 'Username',
+                    border: OutlineInputBorder(),
+                  ),
+                  validator: _validateUsername,
                 ),
-              ),
-              SizedBox(height: screenHeight * 0.02),
-              TextField(
-                controller: emailController,
-                decoration: InputDecoration(
-                  labelText: 'Email',
-                  border: OutlineInputBorder(),
+                SizedBox(height: screenHeight * 0.02),
+                TextFormField(
+                  controller: emailController,
+                  decoration: InputDecoration(
+                    labelText: 'Email',
+                    border: OutlineInputBorder(),
+                  ),
+                  validator: _validateEmail,
                 ),
-              ),
-              SizedBox(height: screenHeight * 0.02),
-              TextField(
-                controller: passwordController,
-                obscureText: true,
-                decoration: InputDecoration(
-                  labelText: 'Password',
-                  border: OutlineInputBorder(),
+                SizedBox(height: screenHeight * 0.02),
+                TextFormField(
+                  controller: passwordController,
+                  obscureText: true,
+                  decoration: InputDecoration(
+                    labelText: 'Password',
+                    border: OutlineInputBorder(),
+                  ),
+                  validator: _validatePassword,
                 ),
-              ),
-              SizedBox(height: screenHeight * 0.02),
-              ElevatedButton(
-                onPressed: isLoading ? null : _signUp,
-                child: isLoading
-                    ? CircularProgressIndicator()
-                    : Text('Sign Up'),
-              ),
-              TextButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => SignInScreen()),
-                  );
-                },
-                child: Text("Already have an account? Sign In"),
-              ),
-            ],
+                SizedBox(height: screenHeight * 0.02),
+                ElevatedButton(
+                  onPressed: isLoading ? null : _signUp,
+                  child: isLoading
+                      ? CircularProgressIndicator()
+                      : Text('Sign Up'),
+                ),
+                TextButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => SignInScreen()),
+                    );
+                  },
+                  child: Text("Already have an account? Sign In"),
+                ),
+              ],
+            ),
           ),
         ),
       ),

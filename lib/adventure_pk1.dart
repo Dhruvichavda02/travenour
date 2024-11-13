@@ -1,8 +1,8 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
 
 import 'books.dart';
-import 'categories.dart'; // Import for Firebase
 
 class TrekDetailsScreen extends StatefulWidget {
   final String packageId;
@@ -16,15 +16,15 @@ class TrekDetailsScreen extends StatefulWidget {
 class _TrekDetailsScreenState extends State<TrekDetailsScreen> {
   int _currentIndex = 2;
   Map<String, dynamic>? packageDetails;
-  bool isLoading = true; // Loading state
+  bool isLoading = true;
 
   @override
   void initState() {
     super.initState();
-    _fetchPackageDetails(widget.packageId); // Fetch package details on init
+    _fetchPackageDetails(widget.packageId);
   }
 
-  // Fetch package details from Firebase based on packageId
+  // Fetch package details from Firebase
   Future<void> _fetchPackageDetails(String packageId) async {
     DatabaseReference packageRef = FirebaseDatabase.instance
         .ref()
@@ -36,8 +36,12 @@ class _TrekDetailsScreenState extends State<TrekDetailsScreen> {
     if (snapshot.exists) {
       setState(() {
         packageDetails = Map<String, dynamic>.from(snapshot.value as Map);
-        isLoading = false; // Data is loaded
+        isLoading = false;
       });
+
+      // Fetch and print the imageUrl for debugging
+      String? imageUrl = packageDetails!['imageurl'];
+      print('Fetched imageUrl: $imageUrl');
     } else {
       print('Package not found!');
     }
@@ -49,26 +53,28 @@ class _TrekDetailsScreenState extends State<TrekDetailsScreen> {
     var screenHeight = MediaQuery.of(context).size.height;
 
     if (isLoading) {
-      // Show a loading spinner while data is loading
       return Scaffold(
         body: Center(child: CircularProgressIndicator()),
       );
     }
 
     if (packageDetails == null) {
-      // Show an error message if the package details are null
       return Scaffold(
         body: Center(child: Text("No package details found.")),
       );
     }
 
-    // Extracting the fetched details
+    // Extract package details and add debug prints
     String startDate = packageDetails!['start_date'] ?? 'N/A';
     String endDate = packageDetails!['end_date'] ?? 'N/A';
     List facilities = packageDetails!['facilities'] ?? [];
     int totalDays = packageDetails!['total_days'] ?? 0;
     String description = packageDetails!['description'] ?? 'No description available';
-    int price =packageDetails!['price'] ?? 0;
+    int price = packageDetails!['price'] ?? 0;
+    String? imageUrl = packageDetails!['imageurl']; // Get image URL
+
+    print("Start Date: $startDate, End Date: $endDate, Facilities: $facilities, Total Days: $totalDays, Price: $price");
+
     return Scaffold(
       body: SingleChildScrollView(
         child: Column(
@@ -80,13 +86,13 @@ class _TrekDetailsScreenState extends State<TrekDetailsScreen> {
                 Container(
                   width: screenWidth,
                   height: screenHeight * 0.4,
-                  decoration: const BoxDecoration(
-                    borderRadius: BorderRadius.only(
+                  decoration: BoxDecoration(
+                    borderRadius: const BorderRadius.only(
                       bottomLeft: Radius.circular(30),
                       bottomRight: Radius.circular(30),
                     ),
                     image: DecorationImage(
-                      image: AssetImage('assets/apk1.png'), // Use your image path
+                      image: _getImageProvider(imageUrl),
                       fit: BoxFit.cover,
                     ),
                   ),
@@ -106,7 +112,7 @@ class _TrekDetailsScreenState extends State<TrekDetailsScreen> {
               ],
             ),
 
-            // Details section
+            // Package Details
             Padding(
               padding: const EdgeInsets.all(16.0),
               child: Column(
@@ -136,7 +142,6 @@ class _TrekDetailsScreenState extends State<TrekDetailsScreen> {
                     ),
                   ),
                   const SizedBox(height: 8),
-                  // Displaying facilities
                   Wrap(
                     spacing: 8.0,
                     children: facilities
@@ -151,7 +156,7 @@ class _TrekDetailsScreenState extends State<TrekDetailsScreen> {
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                     const SizedBox(height: 16),
+                  const SizedBox(height: 16),
                   Text(
                     'Price: $price',
                     style: TextStyle(
@@ -196,7 +201,8 @@ class _TrekDetailsScreenState extends State<TrekDetailsScreen> {
                   onPressed: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => BookingForm(packageId: widget.packageId,price: price)),
+                      MaterialPageRoute(
+                          builder: (context) => BookingForm(packageId: widget.packageId, price: price)),
                     );
                   },
                   child: Text(
@@ -244,10 +250,30 @@ class _TrekDetailsScreenState extends State<TrekDetailsScreen> {
           setState(() {
             _currentIndex = index;
           });
-
-        
         },
       ),
     );
   }
+
+  // Helper function to decide how to load the image
+ ImageProvider<Object> _getImageProvider(String? imageUrl) {
+  if (imageUrl == null || imageUrl.isEmpty) {
+    return AssetImage('assets/coorg.png');
+  }
+
+  // Check if the URL starts with 'http' for a Network Image
+  if (imageUrl.startsWith('http') || imageUrl.startsWith('https')) {
+    print("Network Image URL: $imageUrl");  // Debug print
+    return NetworkImage(imageUrl);
+  }
+
+  try {
+    base64Decode(imageUrl); // Try to decode base64 if needed
+    return MemoryImage(base64Decode(imageUrl));
+  } catch (e) {
+    print("Error decoding base64 image: $e");
+    return AssetImage('assets/coorg.png');  // Fallback on error
+  }
+}
+
 }

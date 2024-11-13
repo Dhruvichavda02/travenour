@@ -49,10 +49,10 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
-  final List<Widget> _screens = [
+  late final List<Widget> _screens = [
     HomeScreenContent(),
     SearchScreen(),
-    BookingScreen(),
+    BookingScreen(userId: userId), // Pass userId to BookingScreen
     ProfileEditApp(),
   ];
 
@@ -61,47 +61,39 @@ class _HomeScreenState extends State<HomeScreen> {
       _currentIndex = index;
     });
   }
-@override
-Widget build(BuildContext context) {
-  return Scaffold(
-    appBar: AppBar(
-      // title: Text(""),
-    ),
-    body: Expanded(
-      child: _screens[_currentIndex], // Display the current screen
-    ),
-    bottomNavigationBar: BottomNavigationBar(
-      items: const <BottomNavigationBarItem>[
-        BottomNavigationBarItem(
-          icon: Icon(Icons.home),
-          label: 'Home',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.search),
-          label: 'Search',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.airplane_ticket),
-          label: 'Booking',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.person),
-          label: 'Profile',
-        ),
-      ],
-      currentIndex: _currentIndex,
-      selectedItemColor: Colors.blueAccent,
-      unselectedItemColor: Colors.grey,
-      onTap: _onItemTapped,
-      type: BottomNavigationBarType.fixed,
-    ),
-    floatingActionButton: FloatingActionButton(
-      onPressed: () {
-        // Add your action here, e.g., create a new booking
-      },
-      child: Icon(Icons.add),
-    ),
-  );
-}
 
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        // title: Text(""),
+      ),
+      body: _screens[_currentIndex], // Display the current screen
+      bottomNavigationBar: BottomNavigationBar(
+        items: const <BottomNavigationBarItem>[
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home),
+            label: 'Home',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.search),
+            label: 'Search',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.airplane_ticket),
+            label: 'Booking',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person),
+            label: 'Profile',
+          ),
+        ],
+        currentIndex: _currentIndex,
+        selectedItemColor: Colors.blueAccent,
+        unselectedItemColor: Colors.grey,
+        onTap: _onItemTapped,
+        type: BottomNavigationBarType.fixed,
+      ),
+    );
+  }
 }

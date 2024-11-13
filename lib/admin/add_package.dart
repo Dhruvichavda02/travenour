@@ -1,4 +1,5 @@
-import 'dart:io';
+import 'dart:convert'; // For Base64 encoding
+
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import '../database_service.dart'; // Update with your actual import path
@@ -10,7 +11,7 @@ class AddPackageForm extends StatefulWidget {
 
 class _AddPackageFormState extends State<AddPackageForm> {
   String? selectedCategory;
-  File? selectedImage;
+  String? base64Image;
 
   final List<String> categories = [
     'Religious Retreat',
@@ -30,10 +31,12 @@ class _AddPackageFormState extends State<AddPackageForm> {
 
   Future<void> _pickImage() async {
     final picker = ImagePicker();
-    final pickedFile = await picker.getImage(source: ImageSource.gallery);
+    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
     if (pickedFile != null) {
+      // Convert image to Base64 string
+      final bytes = await pickedFile.readAsBytes();
       setState(() {
-        selectedImage = File(pickedFile.path);
+        base64Image = base64Encode(bytes);
       });
     }
   }
@@ -61,6 +64,7 @@ class _AddPackageFormState extends State<AddPackageForm> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // Category Dropdown
               Text("Choose Category"),
               SizedBox(height: screenHeight * 0.02),
               DropdownButtonFormField<String>(
@@ -82,6 +86,8 @@ class _AddPackageFormState extends State<AddPackageForm> {
                 },
               ),
               SizedBox(height: screenHeight * 0.03),
+
+              // Package Name TextField
               Text("Package Name"),
               SizedBox(height: screenHeight * 0.02),
               TextField(
@@ -92,6 +98,8 @@ class _AddPackageFormState extends State<AddPackageForm> {
                 ),
               ),
               SizedBox(height: screenHeight * 0.03),
+
+              // Package Description TextField
               Text("Package Description"),
               SizedBox(height: screenHeight * 0.02),
               TextField(
@@ -102,6 +110,8 @@ class _AddPackageFormState extends State<AddPackageForm> {
                 ),
               ),
               SizedBox(height: screenHeight * 0.03),
+
+              // Price TextField
               Text("Price"),
               SizedBox(height: screenHeight * 0.02),
               TextField(
@@ -113,6 +123,8 @@ class _AddPackageFormState extends State<AddPackageForm> {
                 ),
               ),
               SizedBox(height: screenHeight * 0.03),
+
+              // Facilities TextField
               Text("Facilities"),
               SizedBox(height: screenHeight * 0.02),
               TextField(
@@ -123,6 +135,8 @@ class _AddPackageFormState extends State<AddPackageForm> {
                 ),
               ),
               SizedBox(height: screenHeight * 0.03),
+
+              // Start Date TextField
               Text("Start Date"),
               SizedBox(height: screenHeight * 0.02),
               TextField(
@@ -133,6 +147,8 @@ class _AddPackageFormState extends State<AddPackageForm> {
                 ),
               ),
               SizedBox(height: screenHeight * 0.03),
+
+              // End Date TextField
               Text("End Date"),
               SizedBox(height: screenHeight * 0.02),
               TextField(
@@ -143,6 +159,8 @@ class _AddPackageFormState extends State<AddPackageForm> {
                 ),
               ),
               SizedBox(height: screenHeight * 0.03),
+
+              // Total Days TextField
               Text("Total Days"),
               SizedBox(height: screenHeight * 0.02),
               TextField(
@@ -154,6 +172,8 @@ class _AddPackageFormState extends State<AddPackageForm> {
                 ),
               ),
               SizedBox(height: screenHeight * 0.03),
+
+              // Seat Limit TextField
               Text("Seat Limit"),
               SizedBox(height: screenHeight * 0.02),
               TextField(
@@ -165,6 +185,8 @@ class _AddPackageFormState extends State<AddPackageForm> {
                 ),
               ),
               SizedBox(height: screenHeight * 0.03),
+
+              // Image Upload Button
               Text("Upload Image"),
               SizedBox(height: screenHeight * 0.02),
               TextButton.icon(
@@ -172,11 +194,14 @@ class _AddPackageFormState extends State<AddPackageForm> {
                 icon: Icon(Icons.upload_file),
                 label: Text('Choose Image'),
               ),
-              if (selectedImage != null) ...[
+              if (base64Image != null) ...[
                 SizedBox(height: screenHeight * 0.02),
-                Text("Selected Image: ${selectedImage!.path.split('/').last}"),
+                Text("Image selected and ready for upload."),
               ],
+
               SizedBox(height: screenHeight * 0.05),
+
+              // Add Package Button
               SizedBox(
                 width: screenWidth,
                 height: screenHeight * 0.06,
@@ -187,7 +212,7 @@ class _AddPackageFormState extends State<AddPackageForm> {
                       borderRadius: BorderRadius.circular(10),
                     ),
                   ),
-                                   onPressed: () async {
+                  onPressed: () async {
                     if (selectedCategory != null) {
                       String packageName = _packageNameController.text;
                       String description = _descriptionController.text;
@@ -203,12 +228,11 @@ class _AddPackageFormState extends State<AddPackageForm> {
                       if (categoryId == null) {
                         // Add the new category using DatabaseService
                         String newCategoryId = DatabaseService().dbRef.child('categories').push().key!;
-                       
                         await DatabaseService().addCategory(categoryId: newCategoryId, categoryName: selectedCategory!);
                         categoryId = newCategoryId;
                       }
 
-                      // Add the package with the obtained categoryId
+                      // Add the package with the obtained categoryId and Base64 image
                       await DatabaseService().addPackage(
                         packageName: packageName,
                         description: description,
@@ -219,7 +243,7 @@ class _AddPackageFormState extends State<AddPackageForm> {
                         endDate: endDate,
                         totalDays: totalDays,
                         seatLimit: seatLimit,
-                        imageFile: selectedImage, // Pass the selected image file
+                        imageUrl: base64Image, // Use the Base64 image
                       );
 
                       // Show a success message
@@ -238,23 +262,15 @@ class _AddPackageFormState extends State<AddPackageForm> {
                         _totalDaysController.clear();
                         _seatLimitController.clear();
                         selectedCategory = null;
-                        selectedImage = null;
+                        base64Image = null;
                       });
                     } else {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('Please select a category.')),
+                        SnackBar(content: Text('Please select a category!')),
                       );
                     }
                   },
-
-                  child: Text(
-                    'Add Package',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
+                  child: Text('Add Package'),
                 ),
               ),
             ],

@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:firebase_database/firebase_database.dart';
-import 'package:travenour_app/home.dart';
-import 'package:travenour_app/search.dart';
-import 'package:travenour_app/signin.dart'; // Ensure you have this SignIn screen.
+import 'package:travenour_app/signin.dart'; // Ensure SignIn screen is properly imported.
 
 void main() => runApp(ProfileEditApp());
 
@@ -15,11 +13,7 @@ class ProfileEditApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       home: ProfileEditScreen(),
-      routes: {
-        '/home': (context) => HomeScreen(userId: ''),
-        '/search': (context) => SearchScreen(),
-        '/profile': (context) => ProfileEditScreen(),
-      },
+      
     );
   }
 }
@@ -44,6 +38,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
   }
 
   Future<void> _loadUserIdAndFetchUserData() async {
+    // Load the user_id from SharedPreferences
     SharedPreferences prefs = await SharedPreferences.getInstance();
     userId = prefs.getString('user_id');
     if (userId != null) {
@@ -53,9 +48,12 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
 
   Future<void> _fetchUserData() async {
     try {
+      // Fetch the user data from Firebase Realtime Database
       final snapshot = await _databaseReference.child('users/$userId').get();
       if (snapshot.exists) {
-        final data = snapshot.value as Map;
+        final data = snapshot.value as Map<dynamic, dynamic>;
+
+        // Update the text controllers with fetched data
         setState(() {
           _firstNameController.text = data['username'] ?? '';
           _lastNameController.text = data['email'] ?? '';
@@ -66,14 +64,45 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
     }
   }
 
-  Future<void> _logout() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.remove('user_id');
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (context) => SignInScreen()),
-    );
+  Future<void> _updateUserData() async {
+    try {
+      // Update data in Firebase Realtime Database
+      if (_firstNameController.text.isNotEmpty && _lastNameController.text.isNotEmpty) {
+        final updatedData = {
+          'username': _firstNameController.text,
+          'email': _lastNameController.text,
+        };
+
+        await _databaseReference.child('users/$userId').update(updatedData);
+
+        // Show success message
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Profile updated successfully")),
+        );
+      } else {
+        // Show error message if name or email is empty
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Name and Email cannot be empty")),
+        );
+      }
+    } catch (error) {
+      // Show failure message
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Failed to update profile")),
+      );
+      print('Error updating user data: $error');
+    }
   }
+Future<void> _logout() async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  await prefs.remove('user_id'); // Remove the user_id from SharedPreferences
+
+  // Use pushReplacement to ensure only the SignInScreen remains in the stack
+  Navigator.pushReplacement(
+    context,
+    MaterialPageRoute(builder: (context) => SignInScreen()),
+  );
+}
 
   void _confirmLogout() {
     showDialog(
@@ -110,9 +139,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
         title: const Text("Edit Profile"),
         actions: [
           TextButton(
-            onPressed: () {
-              // Save functionality here
-            },
+            onPressed: _updateUserData, // Update functionality on "Done"
             child: const Text("Done", style: TextStyle(color: Colors.blue)),
           ),
         ],
@@ -134,8 +161,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                     ),
                     CircleAvatar(
                       radius: screenWidth * 0.14,
-                      backgroundImage: const AssetImage(
-                          'assets/profile_picture.png'), // Replace with actual image path
+                      backgroundImage: AssetImage('assets/admin_profile.jpg'), // Default profile image
                     ),
                   ],
                 ),
@@ -143,7 +169,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
               SizedBox(height: screenHeight * 0.02),
               Center(
                 child: Text(
-                  "${_firstNameController.text} ",
+                  "${_firstNameController.text} ", // Username will be displayed
                   style: TextStyle(
                       fontSize: screenWidth * 0.05,
                       fontWeight: FontWeight.bold),
